@@ -1,1 +1,1 @@
-declare module "@juggle/resize-observer"
+declare module '@juggle/resize-observer'

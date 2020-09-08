@@ -6,12 +6,12 @@ const Pile = function (stage, calculate, interaction, faceUp) {
     ? document.querySelector(stage)
     : stage
   self.stage.classList.add('stage')
-  self.calculate = calculate || ((c, i, l) => {
+  self.calculate = calculate ?? ((c, i, l) => {
     c.position.left = i / 54 / 100
     c.position.top = i / 54 / 100
     c.position.zIndex = i
   })
-  self.interaction = interaction || ((c, i, l) => {
+  self.interaction = interaction ?? ((c, i, l) => {
     c.onpanstart = function () {}
     c.onpanmove = function () {}
     c.onpanend = function () {}
@@ -23,7 +23,7 @@ const Pile = function (stage, calculate, interaction, faceUp) {
 
 Pile.prototype.add = async function (id, type, position, atIndex) {
   const self = this
-  atIndex = atIndex || self.cards.length
+  atIndex = atIndex ?? self.cards.length
   position = Object.assign({}, position)
   const card = new Card(self.stage, id, type, position)
   await card.init()
@@ -35,7 +35,7 @@ Pile.prototype.add = async function (id, type, position, atIndex) {
 Pile.prototype.addDeck = async function (idPrefix) {
   const self = this
   const types = ['S', 'H', 'C', 'D']
-  idPrefix = idPrefix || ''
+  idPrefix = idPrefix ?? ''
   const result = []
   const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
   for (const t of types) {
@@ -63,7 +63,7 @@ Pile.prototype.shuffle = function (cards) {
 Pile.prototype.exchange = function (card, anotherPile, animate, atIndex) {
   const self = this
   if (self.cards.indexOf(card) > -1) {
-    atIndex = atIndex || anotherPile.cards.length
+    atIndex = atIndex ?? anotherPile.cards.length
     self.detachInteraction()
     anotherPile.detachInteraction()
     self.cards.splice(self.cards.indexOf(card), 1)

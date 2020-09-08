@@ -5,11 +5,11 @@ const Card = function (stage, id, type, position, cardDomType, cardWidth) {
   self.stage = stage
   self.id = id
   self.type = type
-  self.cardWidth = cardWidth || 0.1
+  self.cardWidth = cardWidth ?? 0.1
   self.faceUp = true
   const defaultPosition = { left: 0.5, top: 0, zIndex: 0 }
   self.position = Object.assign({}, defaultPosition, position)
-  self.cardDomType = cardDomType || 'div'
+  self.cardDomType = cardDomType ?? 'div'
   new ResizeObserver(() => {
     self.updatePosition()
   }).observe(self.stage)
@@ -44,10 +44,10 @@ Card.prototype.init = async function () {
   self.updatePosition()
   self.stage.append(self.dom)
 
-  self.hammer = self.hammer || new Hammer(self.dom)
-  self.pan = self.pan || new Hammer.Pan({ threshold: 0 })
-  self.press = self.press || new Hammer.Press({ time: 1 })
-  self.tap = self.press || new Hammer.Tap({ time: 1 })
+  self.hammer = self.hammer ?? new Hammer(self.dom)
+  self.pan = self.pan ?? new Hammer.Pan({ threshold: 0 })
+  self.press = self.press ?? new Hammer.Press({ time: 1 })
+  self.tap = self.press ?? new Hammer.Tap({ time: 1 })
   const recognizers = [self.pan, self.press, self.tap]
   self.hammer.add(recognizers)
   const startPosition = {}
@@ -89,7 +89,7 @@ Card.prototype.init = async function () {
   })
 }
 
-Card.prototype.updatePosition = function (animate, ignoreZ) {
+Card.prototype.updatePosition = function (animate) {
   const self = this
   const clientRect = self.stage.getBoundingClientRect()
   const cardWidthBase = self.cardWidth * clientRect.width
@@ -113,9 +113,6 @@ Card.prototype.updatePosition = function (animate, ignoreZ) {
       , 0, 0,
       cardWidthBase, cardHeightBase
     )
-  }
-  if (!ignoreZ) {
-    self.dom.style.zIndex = self.position.zIndex
   }
   animate
     ? self.dom.classList.add('animate')

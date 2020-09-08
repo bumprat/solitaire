@@ -1,8 +1,8 @@
 import Hammer from 'hammerjs'
 import { ResizeObserver } from '@juggle/resize-observer'
 
-type position = {left:number, top:number, zIndex:number}
-
+type position = { left:number, top:number, zIndex:number }
+type NamespacedEventHandler = { namespace:string, handler:globalThis.HammerListener }
 export default class Card {
   stage: Element
   position: {left:number, top: number, zIndex:number}
@@ -11,18 +11,19 @@ export default class Card {
   imgBack: HTMLImageElement = new Image()
   ratio: number = 0
   hammer:globalThis.HammerManager
-  recognizers: globalThis.Recognizer[] = [
-  ]
-
   draggable: boolean = false
-  ontap: globalThis.HammerListener = (e) => {}
-  ondoubletap: globalThis.HammerListener = (e) => {}
-  onpress: globalThis.HammerListener = (e) => {}
-  onpressup: globalThis.HammerListener = (e) => {}
-  onpanstart: globalThis.HammerListener = (e) => {}
-  onpanmove: globalThis.HammerListener = (e) => {}
-  onpanend: globalThis.HammerListener = (e) => {}
+  ontap: NamespacedEventHandler[] = []
+  ondoubletap: NamespacedEventHandler[] = []
+  onpress: NamespacedEventHandler[] = []
+  onpressup: NamespacedEventHandler[] = []
+  onpanstart: NamespacedEventHandler[] = []
+  onpanmove: NamespacedEventHandler[] = []
+  onpanend: NamespacedEventHandler[] = []
+  eventHandlers: {[x:string]: NamespacedEventHandler[]}
   faceUp: boolean
+  private prevTransform: string = ''
+  static imgSrc: string = './cards/{type}.svg'
+  static imgBackSrc: string = './cards/RED_BACK.svg'
   constructor (
     stage: Element | string,
     public id: string,
@@ -44,6 +45,15 @@ export default class Card {
     }
     this.id = id
     this.type = type
+    this.eventHandlers = {
+      ontap: this.ontap,
+      ondoubletap: this.ondoubletap,
+      onpress: this.onpress,
+      onpressup: this.onpressup,
+      onpanstart: this.onpanstart,
+      onpanmove: this.onpanmove,
+      onpanend: this.onpanend
+    }
     const defaultPosition:position = { left: 0, top: 0, zIndex: 0 }
     this.position = Object.assign({}, position, defaultPosition)
     this.cardDomType = cardDomType
@@ -55,20 +65,40 @@ export default class Card {
     this.dom.classList.add('card')
     this.stage.append(this.dom)
     this.faceUp = true
-    this.hammer = new Hammer(this.dom, { recognizers: [] })
+    this.hammer = new Hammer(this.dom, {
+      recognizers: []
+    })
     const pan = new Hammer.Pan({ threshold: 5 })
-    // const press = new Hammer.Press({ time: 100 })
-    const singleTap = new Hammer.Tap()
-    // const doubleTap = new Hammer.Tap({ taps: 2, event: 'doubletap', time: 300, interval: 300 })
-    // doubleTap.requireFailure(press)
-    // singleTap.requireFailure(doubleTap)
-    // doubleTap.recognizeWith(singleTap)
-    this.recognizers = this.recognizers.concat([pan, singleTap])
-    // this.hammer = new Hammer(this.dom)
-    this.hammer.add(this.recognizers)
+    const singleTap = new Hammer.Tap({ event: 'singletap' })
+    const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2, interval: 50 })
+    this.hammer.add([pan, doubleTap, singleTap])
+    doubleTap.recognizeWith(singleTap)
+    singleTap.requireFailure(doubleTap)
     new ResizeObserver(() => {
-      this.updatePosition()
+      this.updatePosition(false)
     }).observe(this.stage)
+
+    const self = this
+    self.hammer.on('singletap', (e:globalThis.HammerInput) => {
+      console.log(`${self.id} singletap`)
+      self.ontap.forEach(h => h.handler(e))
+    })
+    self.hammer.on('doubletap', (e:globalThis.HammerInput) => {
+      console.log(`${self.id} doubletap`)
+      self.ondoubletap.forEach(h => h.handler(e))
+    })
+    self.hammer.on('panstart', function (e) {
+      console.log(`${self.id} panstart`)
+      self.onpanstart.forEach(h => h.handler(e))
+    })
+    self.hammer.on('panmove', function (e) {
+      console.log(`${self.id} panmove`)
+      self.onpanmove.forEach(h => h.handler(e))
+    })
+    self.hammer.on('panend', function (e) {
+      console.log(`${self.id} panend`)
+      self.onpanend.forEach(h => h.handler(e))
+    })
   }
 
   async init () {
@@ -81,8 +111,8 @@ export default class Card {
         img.onerror = (e) => reject(new Error(e instanceof Event ? e.type : e))
       })
     }
-    await loadImage(self.img, `./cards/${self.type}.svg`)
-    await loadImage(self.imgBack, './cards/RED_BACK.svg')
+    await loadImage(self.img, Card.imgSrc.replace('{type}', self.type))
+    await loadImage(self.imgBack, Card.imgBackSrc)
     self.ratio = self.img.height / self.img.width
     self.dom.append(self.img)
     self.dom.append(self.imgBack)
@@ -92,59 +122,10 @@ export default class Card {
     self.img.style.display = 'none'
     self.imgBack.style.display = 'none'
     self.dom.style.opacity = '0'
-    self.updatePosition()
-
-    const startPosition:{left:number, top:number} = { left: 0, top: 0 }
-    self.hammer.on('tap', (e:globalThis.HammerInput) => {
-      console.log(`${self.id} singletap`)
-      self.ontap(e)
-    })
-    self.hammer.on('doubletap', (e:globalThis.HammerInput) => {
-      console.log(`${self.id} doubletap`)
-      self.ondoubletap(e)
-    })
-    self.hammer.on('press', function (e) {
-      console.log(`${self.id} press`)
-      self.onpress(e)
-      if (self.draggable) {
-        self.dom.style.zIndex = '' + 999999999
-        self.updatePosition(false, true)
-      }
-    })
-    self.hammer.on('pressup', function (e:globalThis.HammerInput) {
-      console.log(`${self.id} pressup`)
-      self.onpressup(e)
-    })
-    self.hammer.on('panstart', function (e) {
-      console.log(`${self.id} panstart`)
-      self.onpanstart(e)
-      if (self.draggable) {
-        startPosition.left = self.position.left
-        startPosition.top = self.position.top
-        self.dom.style.zIndex = '' + 999999999
-        self.updatePosition(false, true)
-      }
-    })
-    self.hammer.on('panmove', function (e:globalThis.HammerInput) {
-      console.log(`${self.id} panmove`)
-      self.onpanmove(e)
-      if (self.draggable) {
-        const clientRect = self.stage.getBoundingClientRect()
-        self.position.left = startPosition.left + (e.deltaX / clientRect.width)
-        self.position.top = startPosition.top + (e.deltaY / clientRect.width)
-        self.updatePosition(false, true)
-      }
-    })
-    self.hammer.on('panend', function (e:globalThis.HammerInput) {
-      console.log(`${self.id} panend`)
-      self.onpanend(e)
-      if (self.draggable) {
-        self.updatePosition()
-      }
-    })
+    await self.updatePosition(false)
   }
 
-  updatePosition (animate:boolean = true, ignoreZ:boolean = false) {
+  async updatePosition (animate: boolean = true, forceZIndex: number = 0) {
     const self = this
     const clientRect = self.stage.getBoundingClientRect()
     const cardWidthBase = self.cardWidth * clientRect.width
@@ -169,13 +150,26 @@ export default class Card {
         cardWidthBase, cardHeightBase
       )
     }
-    if (!ignoreZ) {
-      self.dom.style.zIndex = '' + self.position.zIndex
+    self.dom.style.zIndex = '' + (+self.position.zIndex + forceZIndex)
+    if (animate) {
+      await Promise.race([new Promise(resolve => {
+        self.dom.classList.add('animate')
+        self.dom.style.transform = `translate(${cardLeft}px, ${cardTop}px)`
+        self.dom.addEventListener('transitionend', function () {
+          self.dom.classList.remove('animate')
+          resolve()
+        }, { once: true })
+      }),
+      new Promise(resolve => {
+        setTimeout(() => {
+          self.dom.classList.remove('animate')
+          resolve()
+        }, 100)
+      })])
+    } else {
+      self.dom.style.transform = `translate(${cardLeft}px,${cardTop}px)`
     }
-    animate
-      ? self.dom.classList.add('animate')
-      : self.dom.classList.remove('animate')
-    self.dom.style.transform = `translate(${cardLeft}px,${cardTop}px)`
+    self.prevTransform = self.dom.style.transform
   }
 
   show () {
@@ -188,5 +182,29 @@ export default class Card {
 
   interact (enable: boolean) {
     this.hammer.set({ enable })
+  }
+
+  clearEvents (namespace?:string, eventType?: string) {
+    if (eventType && `on${eventType}` in this.eventHandlers) {
+      const eh = this.eventHandlers[`on${eventType}`]
+      if (namespace) {
+        const match = eh.filter(h => h.namespace === namespace)
+        match.forEach(h => eh.splice(eh.indexOf(h), 1))
+      } else {
+        eh.splice(0)
+      }
+    } else {
+      if (namespace) {
+        for (const onevent in this.eventHandlers) {
+          const eh = this.eventHandlers[onevent]
+          const match = eh.filter(h => h.namespace === namespace)
+          match.forEach(h => eh.splice(eh.indexOf(h), 1))
+        }
+      } else {
+        for (const onevent in this.eventHandlers) {
+          this.eventHandlers[onevent].splice(0)
+        }
+      }
+    }
   }
 }

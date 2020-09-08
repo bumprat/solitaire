@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "set NODE_ENV=development&&rollup -c -w",
-    "build": "set NODE_ENV=production&&rollup -c"
+    "dev": "set NODE_ENV=development&&pnpx rollup -c -w",
+    "build": "set NODE_ENV=production&&pnpx rollup -c"
   },
   "author": "",
   "license": "ISC",

@@ -2,6 +2,50 @@ import Card from './Card'
 import Pile, { pileLayout, stackLayout } from './Pile'
 import { Point } from './SharedTypes'
 
+function canCardDropType (this: Pile, card?: Card):boolean {
+  const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+  if (card === undefined) return false
+  const cardType = card && card.type.slice(-1)
+  const cardNumber = card && card.type.slice(0, -1)
+  if (
+    card.faceUp &&
+    cardType.toUpperCase() ===
+      this.id[0].toUpperCase()
+  ) {
+    if (this.cards.length === 0) {
+      return cardNumber === 'A'
+    } else {
+      const lastCardNumber = this.cards.slice(-1)[0].type.slice(0, -1)
+      if (numbers.indexOf(cardNumber) - numbers.indexOf(lastCardNumber) === 1) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+function canCardDropLane (this: Pile, card?: Card) {
+  const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+  const types = { S: 1, H: 2, C: 1, D: 2 } as {[x:string]:number}
+  if (card && card.faceUp) {
+    const cardType = card.type.slice(-1).toUpperCase()
+    const cardNumber = card.type.slice(0, -1)
+    if (this.cards.length === 0) {
+      return cardNumber === 'K'
+    }
+    const lastCard = this.cards.slice(-1)[0]
+    const lastCardType = lastCard.type.slice(-1).toUpperCase()
+    const lastcardNumber = lastCard.type.slice(0, -1)
+    if (
+      types[cardType] !== types[lastCardType] &&
+      numbers.indexOf(lastcardNumber) - numbers.indexOf(cardNumber) === 1
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
 export default class Solitaire {
   stage: Element
   piles: Pile[] = []
@@ -20,209 +64,132 @@ export default class Solitaire {
     } else {
       this.stage = stage
     }
-    const poolHide = new Pile(
+    const lefts = Array(7).fill(0).map((n, i) => i * 0.14 + 0.02)
+    const pileHide = new Pile(
       'hide',
       self.stage,
       (c, i, l) => {
         pileLayout(c, i, l)
         c.faceUp = false
       },
-      (c, i, l) => {
-        if (i === l - 1) {
-          c.ontap = function () {
-            self.find('hide').exchange(c, self.find('show'), true)
-          }
-          c.onpanend = function (e) {
-            const targetPile = self.findDrop(e.center, c)
-            if (targetPile) {
-              switch (targetPile.id) {
-                case 'hide':
-                  self.find('hide').updatePosition()
-                  break
-                case 'show':
-                  self.find('hide').exchange(c, self.find('show'), true)
-                  break
-                default:
-                  self.find('hide').updatePosition()
-              }
-            } else {
-              self.find('hide').updatePosition()
-            }
-          }
-        }
-      },
-      false,
-      { left: 0.02, top: 0.02, zIndex: 0 }
+      () => false,
+      { left: lefts[0], top: 0.02, zIndex: 0 }
     )
-    const poolShow = new Pile(
+    const pileShow = new Pile(
       'show',
       stage,
       (c, i, l) => {
         pileLayout(c, i, l)
         c.faceUp = true
       },
-      (c, i, l) => {
-        if (i === l - 1) {
-          c.ontap = function () {
-            self.autoExchangeTypePools(self.find('show'), c)
-            if (self.find('hide').cards.length === 0) {
-              Array.from(self.find('show').cards).reverse()
-                .forEach(c => {
-                  self.find('show').exchange(c, self.find('hide'), true)
-                })
-            }
-          }
-          c.onpanend = function (e) {
-            self.faceUpCardPanendHandler('show', self, e, c, [])
-          }
-        }
-      },
-      true,
-      { left: 0.02, top: 0.2, zIndex: 1000 }
+      () => false,
+      { left: lefts[1], top: 0.02, zIndex: 1000 }
     )
-    const poolSpade = new Pile(
+    const pileSpade = new Pile(
       'spade',
       stage,
-      pileLayout,
       (c, i, l) => {
-        if (i === l - 1) {
-          c.onpanend = function (e) {
-            self.faceUpCardPanendHandler('spade', self, e, c, [])
-          }
-        }
+        pileLayout(c, i, l)
+        c.faceUp = true
       },
-      true,
-      { left: 0.4, top: 0.02, zIndex: 2000 }
+      canCardDropType,
+      { left: lefts[3], top: 0.02, zIndex: 2000 }
     )
-    const poolHeart = new Pile(
+    const pileHeart = new Pile(
       'heart',
       stage,
       pileLayout,
-      (c, i, l) => {
-        if (i === l - 1) {
-          c.onpanend = function (e) {
-            self.faceUpCardPanendHandler('heart', self, e, c, [])
-          }
-        }
-      },
-      true,
-      { left: 0.55, top: 0.02, zIndex: 2000 }
+      canCardDropType,
+      { left: lefts[4], top: 0.02, zIndex: 2000 }
     )
-    const poolClub = new Pile(
+    const pileClub = new Pile(
       'club',
       stage,
       pileLayout,
-      (c, i, l) => {
-        if (i === l - 1) {
-          c.onpanend = function (e) {
-            self.faceUpCardPanendHandler('club', self, e, c, [])
-          }
-        }
-      },
-      true,
-      { left: 0.7, top: 0.02, zIndex: 2000 }
+      canCardDropType,
+      { left: lefts[5], top: 0.02, zIndex: 2000 }
     )
-    const poolDiamond = new Pile(
+    const pileDiamond = new Pile(
       'diamond',
       stage,
       pileLayout,
-      (c, i, l) => {
-        if (i === l - 1) {
-          c.onpanend = function (e) {
-            self.faceUpCardPanendHandler('diamond', self, e, c, [])
-          }
-        }
-      },
-      true,
-      { left: 0.85, top: 0.02, zIndex: 2000 }
+      canCardDropType,
+      { left: lefts[6], top: 0.02, zIndex: 2000 }
     )
-    const poolLane1 = new Pile(
+    const pileLane1 = new Pile(
       'lane1',
       stage,
       (c, i, l) => {
-        if (!self.initial) {
-          if (i === l - 1) {
-            c.faceUp = true
-          }
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
         }
         stackLayout(c, i, l)
       },
-      (c, i, l) => {
-        self.laneInteract('lane1', c, i, l)
-      },
-      true,
-      { left: 0.25, top: 0.2, zIndex: 2000 }
+      canCardDropLane,
+      { left: lefts[1], top: 0.2, zIndex: 2000 }
     )
-    const poolLane2 = new Pile(
+    const pileLane2 = new Pile(
       'lane2',
       stage,
       (c, i, l) => {
-        if (!self.initial) {
-          if (i === l - 1) {
-            c.faceUp = true
-          }
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
         }
         stackLayout(c, i, l)
       },
-      (c, i, l) => {
-        self.laneInteract('lane2', c, i, l)
-      },
-      true,
-      { left: 0.4, top: 0.2, zIndex: 2000 }
+      canCardDropLane,
+      { left: lefts[2], top: 0.2, zIndex: 2000 }
     )
-    const poolLane3 = new Pile(
+    const pileLane3 = new Pile(
       'lane3',
       stage,
       (c, i, l) => {
-        if (!self.initial) {
-          if (i === l - 1) {
-            c.faceUp = true
-          }
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
         }
         stackLayout(c, i, l)
       },
-      (c, i, l) => {
-        self.laneInteract('lane3', c, i, l)
-      },
-      true,
-      { left: 0.55, top: 0.2, zIndex: 2000 }
+      canCardDropLane,
+      { left: lefts[3], top: 0.2, zIndex: 2000 }
     )
-    const poolLane4 = new Pile(
+    const pileLane4 = new Pile(
       'lane4',
       stage,
       (c, i, l) => {
-        if (!self.initial) {
-          if (i === l - 1) {
-            c.faceUp = true
-          }
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
         }
         stackLayout(c, i, l)
       },
-      (c, i, l) => {
-        self.laneInteract('lane4', c, i, l)
-      },
-      true,
-      { left: 0.7, top: 0.2, zIndex: 2000 }
+      canCardDropLane,
+      { left: lefts[4], top: 0.2, zIndex: 2000 }
     )
-    const poolLane5 = new Pile(
+    const pileLane5 = new Pile(
       'lane5',
       stage,
       (c, i, l) => {
-        if (!self.initial) {
-          if (i === l - 1) {
-            c.faceUp = true
-          }
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
         }
         stackLayout(c, i, l)
       },
-      (c, i, l) => {
-        self.laneInteract('lane5', c, i, l)
-      },
-      true,
-      { left: 0.85, top: 0.2, zIndex: 2000 }
+      canCardDropLane,
+      { left: lefts[5], top: 0.2, zIndex: 2000 }
     )
-    this.piles.push(poolShow, poolHide, poolSpade, poolHeart, poolClub, poolDiamond, poolLane1, poolLane2, poolLane3, poolLane4, poolLane5)
-    this.typePiles.push(poolSpade, poolHeart, poolClub, poolDiamond)
+    const pileLane6 = new Pile(
+      'lane6',
+      stage,
+      (c, i, l) => {
+        if (!self.initial && i === l - 1) {
+          c.faceUp = true
+        }
+        stackLayout(c, i, l)
+      },
+      canCardDropLane,
+      { left: lefts[6], top: 0.2, zIndex: 2000 }
+    )
+    this.piles.push(pileShow, pileHide, pileSpade, pileHeart, pileClub, pileDiamond, pileLane1, pileLane2, pileLane3, pileLane4, pileLane5, pileLane6)
+    this.typePiles.push(pileSpade, pileHeart, pileClub, pileDiamond)
   }
 
   find (id:string) {
@@ -237,189 +204,145 @@ export default class Solitaire {
     const self = this
     await self.find('hide').addDeck('deck-1')
     self.find('hide').shuffle()
-    await self.find('hide').updatePosition()
+    await self.find('hide').updatePosition(false)
     self.find('hide').show()
-    self.find('hide').attachInteraction()
-    for (let m = 1; m <= 5; m++) {
-      for (let n = m; n <= 5; n++) {
-        if (n === m) {
-          await self.dispatch('lane' + n, true)
-          console.log('lane' + n, true)
-        } else {
-          await self.dispatch('lane' + n, false)
-          console.log('lane' + n, false)
-        }
-        await new Promise(resolve => setTimeout(resolve, 100))
+    for (let m = 1; m <= 6; m++) {
+      for (let n = m; n <= 6; n++) {
+        await self.dispatch('lane' + n, n === m)
+        console.log('lane' + n, true)
       }
     }
     self.dispatch('show', true)
     self.initial = false
+    self.initInteraction()
   }
 
   async dispatch (pileId:string, faceUp:boolean) {
     const self = this
     const card = self.find('hide').cards.slice(-1)
     card[0].faceUp = faceUp
-    await self.find('hide').exchange(card[0], self.find(pileId), true)
+    await self.find('hide').exchange(card, self.find(pileId), true)
   }
 
-  findDrop (point: Point, card: Card) {
-    return this.piles.filter(p => p.cards.indexOf(card) < 0).find(p => p.checkPoint(point))
+  getTargetPile (point: Point, card: Card) {
+    const result = this.piles.filter(p => p.cards.indexOf(card) < 0).filter(p => p.isPointInPile(point))
+    return result
   }
 
-  exchangeTypePools (sourcePile: Pile, targetPileId: string, card: Card) {
-    const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-    const targetPile = this.find(targetPileId)
-    const cardNumber = card.type.slice(0, -1)
-    const cardType = card.type.slice(-1)
-    const lastCard = targetPile.cards.slice(-1)
-    if (cardType.toUpperCase() === targetPileId[0].toUpperCase()) {
-      if (lastCard.length === 0 && cardNumber === 'A') {
-        sourcePile.exchange(card, targetPile, true)
-      } else {
-        const lastCardNumber = lastCard[0].type.slice(0, -1)
-        if (numbers.indexOf(cardNumber) - numbers.indexOf(lastCardNumber) === 1) {
-          sourcePile.exchange(card, targetPile, true)
-        } else {
-          sourcePile.updatePosition()
-        }
-      }
-    } else {
-      sourcePile.updatePosition()
-    }
+  getPileById (id: string) {
+    return this.piles.find(p => p.id === id)
   }
 
-  exchangeLanePools (sourcePile: Pile, targetPileId: string, card: Card) {
-    const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-    const types = { S: 1, H: 2, C: 1, D: 2 } as {[x:string]:number}
-    const targetPile = this.find(targetPileId)
-    const cardNumber = card.type.slice(0, -1)
-    const cardType = card.type.slice(-1)
-    const lastCard = targetPile.cards.slice(-1)[0]
-    if (!lastCard) {
-      if (cardNumber === 'K') {
-        sourcePile.exchange(card, targetPile, true)
-      } else {
-        sourcePile.updatePosition()
-      }
-    } else {
-      const lastCardNumber = lastCard.type.slice(0, -1)
-      const lastCardType = lastCard.type.slice(-1)
-      if (!lastCard.faceUp) {
-        if (cardNumber === 'K') {
-          sourcePile.exchange(card, targetPile, true)
-        } else {
-          sourcePile.updatePosition()
-        }
-      } else {
-        if (
-          numbers.indexOf(lastCardNumber) - numbers.indexOf(cardNumber) === 1 &&
-        types[cardType] !== types[lastCardType]
-        ) {
-          sourcePile.exchange(card, targetPile, true)
-        } else {
-          sourcePile.updatePosition()
-        }
-      }
-    }
+  getPileByCard (card: Card) {
+    return this.piles.find(p => p.cards.some(c => c === card))
   }
 
-  autoExchangeTypePools (sourcePile: Pile, card: Card) {
-    const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-    const cardNumber = card.type.slice(0, -1)
-    const cardType = card.type.slice(-1)
-    const targetPile = this.typePiles.find(p => p.id[0].toUpperCase() === cardType.toUpperCase())
-    if (targetPile) {
-      const lastCard = targetPile.cards.slice(-1)[0]
-      if (!lastCard) {
-        if (cardNumber === 'A') {
-          sourcePile.exchange(card, targetPile, true)
-        } else {
-          sourcePile.updatePosition()
-        }
-      } else {
-        const lastCardNumber = lastCard.type.slice(0, -1)
-        if (
-          numbers.indexOf(cardNumber) - numbers.indexOf(lastCardNumber) === 1
-        ) {
-          sourcePile.exchange(card, targetPile, true)
-        } else {
-          sourcePile.updatePosition()
-        }
-      }
-    } else {
-      sourcePile.updatePosition()
-    }
-  }
-
-  faceUpCardPanendHandler (sourcePoolId:string, self: Solitaire, e: globalThis.HammerInput, c:Card, belowCards: Card[]) {
-    const targetPile = self.findDrop(e.center, c)
-    if (targetPile) {
-      switch (targetPile.id) {
-        case 'hide':
-          self.find(sourcePoolId).updatePosition()
-          break
-        case 'show':
-          self.find(sourcePoolId).updatePosition()
-          break
-        case 'spade':
-        case 'heart':
-        case 'club':
-        case 'diamond':
-          if (belowCards.length === 0) {
-            self.exchangeTypePools(self.find(sourcePoolId), targetPile.id, c)
-          } else {
-            self.find(sourcePoolId).updatePosition()
+  initInteraction () {
+    const self = this
+    const allCards:Card[] = []
+    self.piles.forEach(p => allCards.push(...p.cards))
+    allCards.forEach(c => {
+      c.ontap.push({
+        namespace: 'pile',
+        handler: () => {
+          const pile = self.getPileByCard(c)
+          if (pile && pile.id === 'hide' && pile.isLast(c)) {
+            pile.exchange([c], self.getPileById('show'))
           }
-          break
-        case 'lane1':
-        case 'lane2':
-        case 'lane3':
-        case 'lane4':
-        case 'lane5':
-          if (belowCards.length === 0) {
-            self.exchangeLanePools(self.find(sourcePoolId), targetPile.id, c)
-          } else {
-            self.exchangeLanePools(self.find(sourcePoolId), targetPile.id, c)
-            belowCards.forEach(c => {
-              self.exchangeLanePools(self.find(sourcePoolId), targetPile.id, c)
+          const hide = self.getPileById('hide')
+          if (pile && pile.id === 'show' && hide && hide.cards.length === 0) {
+            pile.exchange(Array.from(pile.cards), hide, false)
+          }
+        }
+      })
+      c.ondoubletap.push({
+        namespace: 'pile',
+        handler: () => {
+          const pile = self.getPileByCard(c)
+          if (c.faceUp && pile && pile.isLast(c)) {
+            self.typePiles.some(t => {
+              if (t.canCardDrop(c)) {
+                pile.exchange([c], t)
+              }
             })
           }
-          break
-        default:
-          self.find(sourcePoolId).updatePosition()
-      }
-    } else {
-      self.find(sourcePoolId).updatePosition()
-    }
-  }
-
-  laneInteract (lanePoolId:string, c:Card, i:number, l:number) {
-    const self = this
-    if (c.faceUp) {
-      const index = self.find(lanePoolId).cards.indexOf(c)
-      const belowCards = self.find(lanePoolId).cards.slice(index + 1)
-      let startPosition: {left:number, top:number, zIndex:number}[]
-      c.ontap = function (e) {
-        if (belowCards.length === 0) {
-          self.autoExchangeTypePools(self.find(lanePoolId), c)
         }
+      })
+      const pointerPile = {
+        items: [] as {
+          card: Card,
+          startPosition: {left:number, top:number, zIndex:number}
+        }[],
+        sourcePile: null as Pile | null
       }
-      c.onpanstart = function (e) {
-        startPosition = belowCards.map(c => Object.assign({}, c.position))
-      }
-      c.onpanmove = function (e) {
-        belowCards.map((c, i) => {
-          const clientRect = self.stage.getBoundingClientRect()
-          c.position.left = startPosition[i].left + (e.deltaX / clientRect.width)
-          c.position.top = startPosition[i].top + (e.deltaY / clientRect.width)
-          c.dom.style.zIndex = '' + (999999999 + startPosition[i].zIndex)
-          c.updatePosition(false, true)
-        })
-      }
-      c.onpanend = function (e) {
-        self.faceUpCardPanendHandler(lanePoolId, self, e, c, belowCards)
-      }
-    }
+      c.onpanstart.push({
+        namespace: 'pile',
+        handler: (e) => {
+          const pile = self.getPileByCard(c)
+          const hide = this.getPileById('hide')
+          if (hide && hide.isPointInPile(e.center)) {
+            pointerPile.sourcePile = hide
+          }
+          if (c.faceUp && pile) {
+            const faceUpPiles = [self.getPileById('show'), ...self.typePiles]
+            if (!(faceUpPiles.indexOf(pile) >= 0 && !pile.isLast(c))) {
+              const index = pile.cards.indexOf(c)
+              pointerPile.items = pile.cards.slice(index).map(c => ({
+                card: c,
+                startPosition: Object.assign({}, c.position)
+              }))
+              pointerPile.sourcePile = pile
+            }
+          }
+        }
+      })
+      c.onpanmove.push({
+        namespace: 'pile',
+        handler: (e) => {
+          if (pointerPile.items.length > 0) {
+            const clientRect = self.stage.getBoundingClientRect()
+            pointerPile.items.forEach(item => {
+              item.card.position.left = item.startPosition.left + (e.deltaX / clientRect.width)
+              item.card.position.top = item.startPosition.top + (e.deltaY / clientRect.width)
+              item.card.updatePosition(false, 999999999 + item.startPosition.zIndex)
+            })
+            const targetPile = self.getTargetPile(e.center, c)[0]
+            if (targetPile) {
+              if (targetPile.canCardDrop(pointerPile.items[0].card)) {
+                targetPile.glow('success')
+              } else {
+                targetPile.glow('fail')
+              }
+              self.piles.filter(p => p !== targetPile).forEach(p => p.glow())
+            } else {
+              self.piles.forEach(p => p.glow())
+            }
+          }
+        }
+      })
+      c.onpanend.push({
+        namespace: 'pile',
+        handler: async (e) => {
+          const targetPile = self.getTargetPile(e.center, c)[0]
+          if (pointerPile.sourcePile === null) return
+          if (pointerPile.sourcePile.id === 'hide' && pointerPile.sourcePile.isPointInPile(e.center)) {
+            pointerPile.sourcePile.exchange(
+              pointerPile.sourcePile.cards.slice(-1),
+              self.getPileById('show')
+            )
+            return
+          }
+          if (targetPile && pointerPile.items.length > 0) {
+            if (targetPile.canCardDrop(pointerPile.items[0].card)) {
+              await pointerPile.sourcePile.exchange(pointerPile.items.reverse().map(i => i.card), targetPile)
+            }
+          }
+          if (pointerPile.sourcePile) {
+            pointerPile.sourcePile.updatePosition()
+          }
+          self.piles.forEach(p => p.glow())
+        }
+      })
+    })
   }
 }

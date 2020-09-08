@@ -1,8 +1,6 @@
 import Card from './Card'
 import { Point } from './SharedTypes'
 import { ResizeObserver } from '@juggle/resize-observer'
-type positionCalculation = (card: Card, index: number, length: number) => void
-type interactionCaculation = (card: Card, index: number, length: number) => void
 export function pileLayout (c: Card, i: number, l: number) {
   c.position.top = i / 54 / 100
   c.position.left = i / 54 / 100
@@ -29,16 +27,18 @@ export default class Pile {
   stage: Element
   cards: Card[] = []
   shadow: HTMLDivElement
+  interactExpand:number = 0.02
+  shadowImg?: HTMLImageElement
   constructor (
     public id: string,
     stage: string | Element,
-    private calculate: positionCalculation = (c, i, l) => {
+    private calculate: (card: Card, index: number, length: number) => void
+    = (c, i, l) => {
       c.position.left = i / 54 / 100
       c.position.top = i / 54 / 100
       c.position.zIndex = i
     },
-    private interaction: interactionCaculation,
-    public faceUp: boolean = true,
+    public canCardDrop: (card?: Card, sourcePile?: Pile) => boolean,
     public position: Card['position'] = {
       left: 0, top: 0, zIndex: 0
     }
@@ -96,34 +96,31 @@ export default class Pile {
 
   shuffle () {
     const self = this
-    self.detachInteraction()
     for (let i = self.cards.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [self.cards[i], self.cards[j]] = [self.cards[j], self.cards[i]]
     }
-    self.updatePosition()
-    self.attachInteraction()
   }
 
-  exchange (
-    card: Card,
-    anotherPile: Pile,
-    animate: boolean,
-    atIndex: number = anotherPile.cards.length
+  async exchange (
+    cards: Card[],
+    anotherPile?: Pile,
+    animate: boolean = true,
+    atIndex?: number
   ) {
     const self = this
-    if (!card) return
-    if (self.cards.indexOf(card) > -1) {
-      atIndex = atIndex || anotherPile.cards.length
-      self.detachInteraction()
-      anotherPile.detachInteraction()
-      self.cards.splice(self.cards.indexOf(card), 1)
-      anotherPile.cards.splice(atIndex, 0, card)
-      self.updatePosition(animate)
+    if (anotherPile === undefined) return
+    cards.forEach(card => {
+      if (self.cards.indexOf(card) > -1) {
+        atIndex = atIndex ?? anotherPile.cards.length
+        self.cards.splice(self.cards.indexOf(card), 1)
+        anotherPile.cards.splice(atIndex, 0, card)
+      }
+    })
+    await Promise.all([
+      self.updatePosition(animate),
       anotherPile.updatePosition(animate)
-      self.attachInteraction()
-      anotherPile.attachInteraction()
-    }
+    ])
   }
 
   async updatePosition (animate: boolean = true) {
@@ -134,32 +131,47 @@ export default class Pile {
       c.position.top += self.position.top
       c.position.zIndex += self.position.zIndex
     })
-    // this.cards.forEach(c => { c.faceUp = self.faceUp })
     await Promise.all(self.cards.map(c => c.updatePosition(animate)))
+    self.updateShadow()
   }
 
   async updateShadow () {
     const clientRect = this.stage.getBoundingClientRect()
-    const img = new Image()
-    async function loadImage (img:HTMLImageElement, src:string) {
+    async function loadImage (src:string): Promise<HTMLImageElement> {
       return new Promise((resolve, reject) => {
+        const img = new Image()
         img.src = src
-        img.complete && resolve()
-        img.onload = () => resolve()
+        img.complete && resolve(img)
+        img.onload = () => resolve(img)
         img.onerror = (e) => reject(new Error(e instanceof Event ? e.type : e))
       })
     }
-    await loadImage(img, './cards/RED_BACK.svg')
+    this.shadowImg = this.shadowImg ?? await loadImage(Card.imgBackSrc)
     this.shadow.style.position = 'absolute'
     const cardWidthBase = 0.1 * clientRect.width
-    const cardHeightBase = cardWidthBase * img.height / img.width
+    const cardHeightBase = cardWidthBase * this.shadowImg.height / this.shadowImg.width
     const padding = 0.01 * clientRect.width
+    const pileTop = Math.min(...this.cards.map(c => c.dom.getBoundingClientRect().top))
+    const pileBottom = Math.max(...this.cards.map(c => c.dom.getBoundingClientRect().bottom))
+    const pileHeight = pileBottom - pileTop
     this.shadow.style.width = cardWidthBase + 2 * padding + 'px'
-    this.shadow.style.height = cardHeightBase + 2 * padding + 'px'
+    this.shadow.style.height = Math.max(pileHeight, cardHeightBase) + 2 * padding + 'px'
+    this.shadow.classList.add('shadow')
     const shadowLeft = this.position.left * clientRect.width - padding
     const shadowTop = this.position.top * clientRect.width - padding
     this.shadow.style.transform = `translate(${shadowLeft}px,${shadowTop}px)`
-    this.shadow.classList.add('shadow')
+  }
+
+  glow (classname?: string) {
+    if (classname !== undefined) {
+      if (!this.shadow.style.transform.match(/ scale\(1\.05\)/g)) {
+        this.shadow.style.transform += ' scale(1.05)'
+      }
+      this.shadow.classList.add(classname)
+    } else {
+      this.shadow.style.transform = this.shadow.style.transform.replace(' scale(1.05)', '')
+      this.shadow.classList.remove('success', 'fail')
+    }
   }
 
   show () {
@@ -170,31 +182,23 @@ export default class Pile {
     this.cards.forEach(c => c.hide())
   }
 
-  async attachInteraction () {
+  isPointInPile (point: Point) {
     const self = this
-    self.cards.forEach((c, i) => {
-      self.interaction(c, i, self.cards.length)
-      c.interact(true)
-    })
-  }
-
-  async detachInteraction () {
-    const self = this
-    self.cards.forEach(c => {
-      c.interact(false)
-    })
-  }
-
-  checkPoint (point: Point) {
-    const self = this
-    return [...self.cards.map(c => c.dom), this.shadow].some(d => {
+    const stageWidth = self.stage.getBoundingClientRect().width
+    const expand = stageWidth * self.interactExpand
+    const range = [this.shadow]
+    return range.some(d => {
       const rect = d.getBoundingClientRect()
       if (
-        point.x > rect.x &&
-        point.x < rect.x + rect.width &&
-        point.y > rect.y &&
-        point.y < rect.y + rect.width
+        point.x > rect.x - expand &&
+        point.x < rect.x + rect.width + expand &&
+        point.y > rect.y - expand &&
+        point.y < rect.y + rect.height + expand
       ) return true
     })
+  }
+
+  isLast (card: Card) {
+    return this.cards.indexOf(card) === this.cards.length - 1
   }
 }
