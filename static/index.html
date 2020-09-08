@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head>
+    <meta
+      viewport="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="./solitaire.css" />
+    <link rel="stylesheet" href="./main.css" />
+    <title>空当接龙</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script src="solitaire.js"></script>
+    <script>
+      const solitaire = new Solitaire("#stage");
+      window.solitaire = solitaire;
+      solitaire.init();
+    </script>
+  </body>
+</html>

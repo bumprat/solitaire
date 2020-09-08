@@ -1,0 +1,23 @@
+.stage {
+  background-color: antiquewhite;
+  overflow: hidden;
+}
+
+#stage {
+  height: 100%;
+  width: 100%;
+}
+
+.card {
+  position: absolute;
+}
+
+.card.animate {
+  transition: transform 0.1s ease-in-out;
+}
+
+.shadow {
+  background-color: #bbb;
+  border-radius: 5px;
+  z-index: -1;
+}
