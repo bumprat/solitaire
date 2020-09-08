@@ -3,6 +3,7 @@ import { ResizeObserver } from '@juggle/resize-observer'
 
 type position = { left:number, top:number, zIndex:number }
 type NamespacedEventHandler = { namespace:string, handler:globalThis.HammerListener }
+type velocity = { x:number, y:number}
 export default class Card {
   stage: Element
   position: {left:number, top: number, zIndex:number}
@@ -24,6 +25,8 @@ export default class Card {
   private prevTransform: string = ''
   static imgSrc: string = './cards/{type}.svg'
   static imgBackSrc: string = './cards/RED_BACK.svg'
+  velocity: velocity = { x: Math.random() * 0.01, y: Math.random() * 0.01 }
+  firstY?: number
   constructor (
     stage: Element | string,
     public id: string,
@@ -206,5 +209,28 @@ export default class Card {
         }
       }
     }
+  }
+
+  fall () {
+    this.position.left = this.position.left + this.velocity.x
+    this.position.top = this.position.top + this.velocity.y
+    if (this.position.left + this.cardWidth > 1) {
+      this.velocity.x = -Math.abs(this.velocity.x)
+    }
+    if (this.position.left < 0) {
+      this.velocity.x = Math.abs(this.velocity.x)
+    }
+    if (this.position.top + this.cardWidth * this.ratio > 1) {
+      if (this.firstY === undefined) {
+        this.firstY = this.velocity.y
+      }
+      this.velocity.y = -Math.abs(this.firstY)
+    }
+    if (this.position.top < 0) {
+      this.velocity.y = Math.abs(this.velocity.y)
+    }
+    this.velocity.y += 0.0002
+    this.updatePosition(false)
+    setTimeout(() => this.fall(), 30)
   }
 }

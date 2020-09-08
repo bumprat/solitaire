@@ -335,6 +335,7 @@ export default class Solitaire {
           if (targetPile && pointerPile.items.length > 0) {
             if (targetPile.canCardDrop(pointerPile.items[0].card)) {
               await pointerPile.sourcePile.exchange(pointerPile.items.reverse().map(i => i.card), targetPile)
+              self.checkWin()
             }
           }
           if (pointerPile.sourcePile) {
@@ -344,5 +345,11 @@ export default class Solitaire {
         }
       })
     })
+  }
+
+  checkWin () {
+    if (this.piles.filter(p => this.typePiles.indexOf(p) < 0).every(p => p.cards.length === 0)) {
+      this.piles.forEach(p => p.cards.forEach(c => c.fall()))
+    }
   }
 }
