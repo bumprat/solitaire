@@ -38,7 +38,7 @@ export default class Pile {
       c.position.top = i / 54 / 100
       c.position.zIndex = i
     },
-    public canCardDrop: (card?: Card, sourcePile?: Pile) => boolean,
+    public canCardDrop: (cards: Card[], sourcePile?: Pile) => boolean,
     public position: Card['position'] = {
       left: 0, top: 0, zIndex: 0
     },

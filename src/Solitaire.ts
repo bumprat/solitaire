@@ -3,9 +3,10 @@ import Pile, { pileLayout, stackLayout } from './Pile'
 import { Point } from './SharedTypes'
 import ProgressBar from 'progressbar.js'
 
-function canCardDropType (this: Pile, card?: Card):boolean {
+function canCardDropType (this: Pile, cards: Card[]):boolean {
   const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-  if (card === undefined) return false
+  if (cards.length !== 1) return false
+  const card = cards[0]
   const cardType = card && card.type.slice(-1)
   const cardNumber = card && card.type.slice(0, -1)
   if (
@@ -25,9 +26,11 @@ function canCardDropType (this: Pile, card?: Card):boolean {
   return false
 }
 
-function canCardDropLane (this: Pile, card?: Card) {
+function canCardDropLane (this: Pile, cards: Card[]) {
   const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
   const types = { S: 1, H: 2, C: 1, D: 2 } as {[x:string]:number}
+  if (cards.length === 0) return false
+  const card = cards[0]
   if (card && card.faceUp) {
     const cardType = card.type.slice(-1).toUpperCase()
     const cardNumber = card.type.slice(0, -1)
@@ -270,6 +273,14 @@ export default class Solitaire {
         namespace: 'pile',
         handler: () => {
           const pile = self.getPileByCard(c)
+          if (c.faceUp && pile && pile.isLast(c)) {
+            self.typePiles.some(t => {
+              if (t.canCardDrop([c])) {
+                pile.exchange([c], t)
+                self.checkWin()
+              }
+            })
+          }
           if (pile && pile.id === 'hide' && pile.isLast(c)) {
             pile.exchange([c], self.getPileById('show'))
             return
@@ -277,14 +288,6 @@ export default class Solitaire {
           const hide = self.getPileById('hide')
           if (pile && pile.id === 'show' && hide && hide.cards.length === 0) {
             pile.exchange(Array.from(pile.cards), hide, false)
-            return
-          }
-          if (c.faceUp && pile && pile.isLast(c)) {
-            self.typePiles.some(t => {
-              if (t.canCardDrop(c)) {
-                pile.exchange([c], t)
-              }
-            })
           }
         }
       })
@@ -294,7 +297,7 @@ export default class Solitaire {
           const pile = self.getPileByCard(c)
           if (c.faceUp && pile && pile.isLast(c)) {
             self.typePiles.some(t => {
-              if (t.canCardDrop(c)) {
+              if (t.canCardDrop([c])) {
                 pile.exchange([c], t)
               }
             })
@@ -341,7 +344,7 @@ export default class Solitaire {
             })
             const targetPile = self.getTargetPile(e.center, c)[0]
             if (targetPile) {
-              if (targetPile.canCardDrop(pointerPile.items[0].card)) {
+              if (targetPile.canCardDrop(pointerPile.items.map(item => item.card))) {
                 targetPile.glow('success')
               } else {
                 targetPile.glow('fail')
@@ -366,7 +369,7 @@ export default class Solitaire {
             return
           }
           if (targetPile && pointerPile.items.length > 0) {
-            if (targetPile.canCardDrop(pointerPile.items[0].card)) {
+            if (targetPile.canCardDrop(pointerPile.items.map(item => item.card))) {
               await pointerPile.sourcePile.exchange(pointerPile.items.reverse().map(i => i.card), targetPile)
               self.checkWin()
             }
