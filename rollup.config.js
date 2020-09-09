@@ -36,6 +36,7 @@ export default {
       target: 'ES3',
       declaration: mode === 'development'
     }),
+    commonjs(),
     nodeResolve({
       customResolveOptions: {
         // I store projects on a encrypted potable drive,
@@ -43,7 +44,6 @@ export default {
         preserveSymlinks: true
       }
     }),
-    commonjs(),
     css(),
     ...(mode === 'development'
       ? [serve({
@@ -54,16 +54,11 @@ export default {
         ],
         open: true
       }), livereload()]
-      : [serve({
-        contentBase: [
-          'dist'
-        ],
-        open: true
-      }), terser(),
-      copy({
-        targets: [
-          { src: 'static/*', dest: 'dist' }
-        ]
-      })])
+      : [terser(),
+        copy({
+          targets: [
+            { src: 'static/*', dest: 'dist' }
+          ]
+        })])
   ]
 }

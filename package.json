@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "set NODE_ENV=development&&pnpx rollup -c -w",
-    "build": "set NODE_ENV=production&&pnpx rollup -c"
+    "build": "set NODE_ENV=production&&pnpx rollup -c",
+    "publish": "git subtree push --prefix dist origin gh-pages"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-typescript": "^5.0.2",
     "@types/hammerjs": "^2.0.36",
+    "@types/progressbar": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "eslint": "^7.8.1",
@@ -33,6 +35,7 @@
   },
   "dependencies": {
     "@juggle/resize-observer": "^3.2.0",
-    "hammerjs": "^2.0.8"
+    "hammerjs": "^2.0.8",
+    "progressbar.js": "^1.1.0"
   }
 }

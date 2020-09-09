@@ -41,7 +41,8 @@ export default class Pile {
     public canCardDrop: (card?: Card, sourcePile?: Pile) => boolean,
     public position: Card['position'] = {
       left: 0, top: 0, zIndex: 0
-    }
+    },
+    shadowContent: string = ''
   ) {
     if (typeof stage === 'string') {
       const find = document.querySelector(stage)
@@ -53,10 +54,13 @@ export default class Pile {
       this.stage = stage
     }
     this.shadow = document.createElement('div') as HTMLDivElement
+    this.shadow.style.opacity = '0'
+    this.shadow.innerHTML = shadowContent
     this.updateShadow()
     this.stage.append(this.shadow)
-    new ResizeObserver(() => {
-      this.updateShadow()
+    new ResizeObserver(async () => {
+      await this.updatePosition()
+      await this.updateShadow()
     }).observe(this.stage)
   }
 
@@ -77,11 +81,12 @@ export default class Pile {
     return card
   }
 
-  async addDeck (idPrefix: string = '') {
+  async addDeck (idPrefix: string = '', progress: (progress:number)=>void) {
     const self = this
     const types = ['S', 'H', 'C', 'D']
     const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
     const result = []
+    const totalCards = types.length * numbers.length
     for (const t of types) {
       for (const n of numbers) {
         const card = await self.add(
@@ -89,6 +94,7 @@ export default class Pile {
           n + t
         )
         result.push(card)
+        progress(result.length / totalCards)
       }
     }
     return result
@@ -176,10 +182,12 @@ export default class Pile {
 
   show () {
     this.cards.forEach(c => c.show())
+    this.shadow.style.opacity = '1'
   }
 
   hide () {
     this.cards.forEach(c => c.hide())
+    this.shadow.style.opacity = '0'
   }
 
   isPointInPile (point: Point) {

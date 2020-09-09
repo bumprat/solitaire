@@ -1,5 +1,4 @@
 import Hammer from 'hammerjs'
-import { ResizeObserver } from '@juggle/resize-observer'
 
 type position = { left:number, top:number, zIndex:number }
 type NamespacedEventHandler = { namespace:string, handler:globalThis.HammerListener }
@@ -25,6 +24,7 @@ export default class Card {
   private prevTransform: string = ''
   static imgSrc: string = './cards/{type}.svg'
   static imgBackSrc: string = './cards/RED_BACK.svg'
+  static cardDomType: 'canvas' | 'svg' = 'canvas'
   velocity: velocity = { x: Math.random() * 0.01, y: Math.random() * 0.01 }
   firstY?: number
   constructor (
@@ -34,7 +34,6 @@ export default class Card {
     position: position = {
       left: 0, top: 0, zIndex: 0
     },
-    public cardDomType: string = 'div',
     public cardWidth: number = 0.1
   ) {
     if (typeof stage === 'string') {
@@ -59,11 +58,14 @@ export default class Card {
     }
     const defaultPosition:position = { left: 0, top: 0, zIndex: 0 }
     this.position = Object.assign({}, position, defaultPosition)
-    this.cardDomType = cardDomType
     this.cardWidth = cardWidth
-    this.dom = document.createElement(this.cardDomType)
+    if (Card.cardDomType === 'svg') {
+      this.dom = document.createElement('div')
+    } else {
+      this.dom = document.createElement('canvas')
+    }
     if (typeof this.dom === 'undefined') {
-      throw new Error(`card cannot be created with dom type: ${this.cardDomType}`)
+      throw new Error(`card cannot be created with dom type: ${Card.cardDomType}`)
     }
     this.dom.classList.add('card')
     this.stage.append(this.dom)
@@ -73,13 +75,11 @@ export default class Card {
     })
     const pan = new Hammer.Pan({ threshold: 5 })
     const singleTap = new Hammer.Tap({ event: 'singletap' })
-    const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2 })
-    this.hammer.add([pan, doubleTap, singleTap])
-    doubleTap.recognizeWith(singleTap)
-    singleTap.requireFailure(doubleTap)
-    new ResizeObserver(() => {
-      this.updatePosition(false)
-    }).observe(this.stage)
+    this.hammer.add([pan, singleTap])
+    // const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2, threshold: 100 })
+    // this.hammer.add([pan, doubleTap, singleTap])
+    // doubleTap.recognizeWith(singleTap)
+    // singleTap.requireFailure(doubleTap)
 
     const self = this
     self.hammer.on('singletap', (e:globalThis.HammerInput) => {
@@ -145,12 +145,13 @@ export default class Card {
       self.img.style.display = self.faceUp ? 'block' : 'none'
       self.imgBack.style.display = !self.faceUp ? 'block' : 'none'
     } else if (self.dom instanceof HTMLCanvasElement) {
-      self.dom.width = cardWidthBase
-      self.dom.height = cardHeightBase
+      self.dom.style.width = cardWidthBase + 'px'
+      self.dom.style.height = cardHeightBase + 'px'
+      self.dom.width = self.img.width
+      self.dom.height = self.img.height
       const context = self.dom.getContext('2d')
       context && context.drawImage(self.faceUp ? self.img : self.imgBack
-        , 0, 0,
-        cardWidthBase, cardHeightBase
+        , 0, 0
       )
     }
     self.dom.style.zIndex = '' + (+self.position.zIndex + forceZIndex)

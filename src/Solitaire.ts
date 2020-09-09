@@ -1,6 +1,7 @@
 import Card from './Card'
 import Pile, { pileLayout, stackLayout } from './Pile'
 import { Point } from './SharedTypes'
+import ProgressBar from 'progressbar.js'
 
 function canCardDropType (this: Pile, card?: Card):boolean {
   const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
@@ -47,16 +48,19 @@ function canCardDropLane (this: Pile, card?: Card) {
 }
 
 export default class Solitaire {
-  stage: Element
+  stage: HTMLElement
   piles: Pile[] = []
   typePiles: Pile[] = []
   private initial:boolean = true
+  private progressbar: HTMLDivElement = document.createElement('div')
+  private bar: any
   constructor (
-    stage: Element | string
+    stage: HTMLElement | string,
+    cardDomType: 'canvas' | 'svg' = 'canvas'
   ) {
     const self = this
     if (typeof stage === 'string') {
-      const find = document.querySelector(stage)
+      const find = document.querySelector(stage) as HTMLElement
       if (find == null) {
         throw new Error(`stage '${stage}' not found!`)
       }
@@ -64,6 +68,8 @@ export default class Solitaire {
     } else {
       this.stage = stage
     }
+    Card.cardDomType = cardDomType
+    this.stage.append(this.progressbar)
     const lefts = Array(7).fill(0).map((n, i) => i * 0.14 + 0.02)
     const pileHide = new Pile(
       'hide',
@@ -73,7 +79,8 @@ export default class Solitaire {
         c.faceUp = false
       },
       () => false,
-      { left: lefts[0], top: 0.02, zIndex: 0 }
+      { left: lefts[0], top: 0.02, zIndex: 0 },
+      '<div class="type">😀</div>'
     )
     const pileShow = new Pile(
       'show',
@@ -83,7 +90,8 @@ export default class Solitaire {
         c.faceUp = true
       },
       () => false,
-      { left: lefts[1], top: 0.02, zIndex: 1000 }
+      { left: lefts[1], top: 0.02, zIndex: 1000 },
+      '<div class="type">😊</div>'
     )
     const pileSpade = new Pile(
       'spade',
@@ -93,28 +101,32 @@ export default class Solitaire {
         c.faceUp = true
       },
       canCardDropType,
-      { left: lefts[3], top: 0.02, zIndex: 2000 }
+      { left: lefts[3], top: 0.02, zIndex: 2000 },
+      '<div class="type">♠</div>'
     )
     const pileHeart = new Pile(
       'heart',
       stage,
       pileLayout,
       canCardDropType,
-      { left: lefts[4], top: 0.02, zIndex: 2000 }
+      { left: lefts[4], top: 0.02, zIndex: 2000 },
+      '<div class="type">♥</div>'
     )
     const pileClub = new Pile(
       'club',
       stage,
       pileLayout,
       canCardDropType,
-      { left: lefts[5], top: 0.02, zIndex: 2000 }
+      { left: lefts[5], top: 0.02, zIndex: 2000 },
+      '<div class="type">♣</div>'
     )
     const pileDiamond = new Pile(
       'diamond',
       stage,
       pileLayout,
       canCardDropType,
-      { left: lefts[6], top: 0.02, zIndex: 2000 }
+      { left: lefts[6], top: 0.02, zIndex: 2000 },
+      '<div class="type">♦</div>'
     )
     const pileLane1 = new Pile(
       'lane1',
@@ -126,7 +138,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[1], top: 0.2, zIndex: 2000 }
+      { left: lefts[1], top: 0.2, zIndex: 2000 },
+      '<div class="type">1</div>'
     )
     const pileLane2 = new Pile(
       'lane2',
@@ -138,7 +151,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[2], top: 0.2, zIndex: 2000 }
+      { left: lefts[2], top: 0.2, zIndex: 2000 },
+      '<div class="type">2</div>'
     )
     const pileLane3 = new Pile(
       'lane3',
@@ -150,7 +164,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[3], top: 0.2, zIndex: 2000 }
+      { left: lefts[3], top: 0.2, zIndex: 2000 },
+      '<div class="type">3</div>'
     )
     const pileLane4 = new Pile(
       'lane4',
@@ -162,7 +177,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[4], top: 0.2, zIndex: 2000 }
+      { left: lefts[4], top: 0.2, zIndex: 2000 },
+      '<div class="type">4</div>'
     )
     const pileLane5 = new Pile(
       'lane5',
@@ -174,7 +190,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[5], top: 0.2, zIndex: 2000 }
+      { left: lefts[5], top: 0.2, zIndex: 2000 },
+      '<div class="type">5</div>'
     )
     const pileLane6 = new Pile(
       'lane6',
@@ -186,7 +203,8 @@ export default class Solitaire {
         stackLayout(c, i, l)
       },
       canCardDropLane,
-      { left: lefts[6], top: 0.2, zIndex: 2000 }
+      { left: lefts[6], top: 0.2, zIndex: 2000 },
+      '<div class="type">6</div>'
     )
     this.piles.push(
       pileShow, pileHide, pileSpade, pileHeart,
@@ -206,7 +224,9 @@ export default class Solitaire {
 
   async init () {
     const self = this
-    await self.find('hide').addDeck('deck-1')
+    await self.find('hide').addDeck('deck-1', p => { self.progress(p) })
+    self.progress()
+    this.piles.forEach(p => p.show())
     self.find('hide').shuffle()
     await self.find('hide').updatePosition(false)
     self.find('hide').show()
@@ -356,6 +376,44 @@ export default class Solitaire {
       this.piles.forEach(p => p.cards.forEach(c => c.fall()))
       this.piles.forEach(p => p.cards.splice(0))
       this.piles.forEach(p => p.updatePosition())
+    }
+  }
+
+  progress (progress?:number) {
+    if (progress !== undefined) {
+      if (!this.bar) {
+        this.progressbar.classList.add('progress')
+        this.bar = new ProgressBar.Circle(this.progressbar, {
+          color: '#fff',
+          strokeWidth: 2,
+          trailWidth: 1,
+          easing: 'easeInOut',
+          duration: 1400,
+          text: {
+            autoStyleContainer: false
+          },
+          from: { color: '#fff', width: 1 },
+          to: { color: '#f00', width: 5 },
+          step: function (state:any, circle:any) {
+            circle.path.setAttribute('stroke', state.color)
+            circle.path.setAttribute('stroke-width', state.width)
+
+            var value = Math.round(circle.value() * 100)
+            if (value === 0) {
+              circle.setText('')
+            } else {
+              circle.setText(value)
+            }
+          }
+        })
+        this.bar.text.style.fontSize = '2rem'
+        this.bar.svg.style.overflow = 'visible'
+      }
+      this.bar.set(progress)
+    } else {
+      if (this.bar) {
+        this.bar.destroy()
+      }
     }
   }
 }

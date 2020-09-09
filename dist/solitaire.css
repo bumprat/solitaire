@@ -1,11 +1,16 @@
-.stage {
-  background-color: antiquewhite;
-  overflow: hidden;
-}
-
 #stage {
+  background-color: #3698e2;
+  overflow: hidden;
+  user-select: none;
   height: 100%;
   width: 100%;
+}
+
+.progress {
+  width: 20vw;
+  left: 40vw;
+  top: 40vh;
+  position: absolute;
 }
 
 .card {
@@ -16,18 +21,30 @@
   transition: transform 0.1s ease-in-out;
 }
 
+.shadow .type {
+  font-size: 5vw;
+  color: #666;
+}
+
 .shadow {
-  background-color: #bbb;
+  background-color: #a7bbd0;
   border-radius: 0.5vw;
-  z-index: -1;
+  z-index: 0;
   transition: transform 0.1s ease-out;
+  box-shadow: inset 0 0 1vw rgba(68, 68, 68, 0.226);
+  border: solid 1px #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .shadow.success {
+  border: solid 1px white;
   background-color: #afa;
-  box-shadow: 0 0 1vw 0.5vw #afa;
+  box-shadow: 0 0 2vw 0.1vw #afa, inset 0 0 1vw rgba(68, 68, 68, 0.226);
 }
 .shadow.fail {
+  border: solid 1px white;
   background-color: #faa;
-  box-shadow: 0 0 1vw 0.5vw #faa;
+  box-shadow: 0 0 2vw 0.1vw #faa, inset 0 0 1vw rgba(68, 68, 68, 0.226);
 }

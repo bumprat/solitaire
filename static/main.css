@@ -1,11 +1,32 @@
-html, body {
+html,
+body {
   margin: 0px;
   padding: 0px;
 }
 
-body {
+.container {
   display: flex;
+  background-color: #3698e2;
   width: 100vw;
+  min-height: 100vh;
   height: 100vh;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.load:first-child {
+  margin-top: 40vh;
+}
+
+.load {
+  background-color: rgb(231, 228, 31);
+  border-radius: 0.4vw;
+  border: solid 0.5vw #fff;
+  margin: 1vw;
+  color: rgb(0, 17, 94);
+  font-size: 2vw;
+  font-weight: bolder;
+  padding: 1vw;
 }
