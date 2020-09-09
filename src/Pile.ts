@@ -112,6 +112,7 @@ export default class Pile {
     cards: Card[],
     anotherPile?: Pile,
     animate: boolean = true,
+    sound: boolean = true,
     atIndex?: number
   ) {
     const self = this
@@ -123,6 +124,9 @@ export default class Pile {
         anotherPile.cards.splice(atIndex, 0, card)
       }
     })
+    if (cards.length > 0 && sound) {
+      cards[0].audioPlaceCard.play()
+    }
     await Promise.all([
       self.updatePosition(animate),
       anotherPile.updatePosition(animate)

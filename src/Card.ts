@@ -27,6 +27,8 @@ export default class Card {
   static cardDomType: 'canvas' | 'svg' = 'canvas'
   velocity: velocity = { x: Math.random() * 0.01, y: Math.random() * 0.01 }
   firstY?: number
+  audioPlaceCard: HTMLAudioElement
+  static audioPlaceCardSrc: string = './cards/cardPlace.wav'
   constructor (
     stage: Element | string,
     public id: string,
@@ -70,6 +72,8 @@ export default class Card {
     this.dom.classList.add('card')
     this.stage.append(this.dom)
     this.faceUp = true
+    this.audioPlaceCard = new Audio()
+
     this.hammer = new Hammer(this.dom, {
       recognizers: []
     })
@@ -116,6 +120,15 @@ export default class Card {
     }
     await loadImage(self.img, Card.imgSrc.replace('{type}', self.type))
     await loadImage(self.imgBack, Card.imgBackSrc)
+    async function loadAudio (audio:HTMLAudioElement, src:string) {
+      return new Promise((resolve, reject) => {
+        audio.src = src
+        audio.readyState === 4 && resolve()
+        audio.onloadeddata = () => resolve()
+        audio.onerror = (e) => reject(new Error(e instanceof Event ? e.type : e))
+      })
+    }
+    await loadAudio(self.audioPlaceCard, Card.audioPlaceCardSrc)
     self.ratio = self.img.height / self.img.width
     self.dom.append(self.img)
     self.dom.append(self.imgBack)

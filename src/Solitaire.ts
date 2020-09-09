@@ -245,7 +245,7 @@ export default class Solitaire {
     const self = this
     const card = self.find('hide').cards.slice(-1)
     card[0].faceUp = faceUp
-    await self.find('hide').exchange(card, self.find(pileId), true)
+    await self.find('hide').exchange(card, self.find(pileId))
   }
 
   getTargetPile (point: Point, card: Card) {
