@@ -73,7 +73,7 @@ export default class Card {
     })
     const pan = new Hammer.Pan({ threshold: 5 })
     const singleTap = new Hammer.Tap({ event: 'singletap' })
-    const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2, interval: 50 })
+    const doubleTap = new Hammer.Tap({ event: 'doubletap', taps: 2 })
     this.hammer.add([pan, doubleTap, singleTap])
     doubleTap.recognizeWith(singleTap)
     singleTap.requireFailure(doubleTap)
