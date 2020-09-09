@@ -272,10 +272,19 @@ export default class Solitaire {
           const pile = self.getPileByCard(c)
           if (pile && pile.id === 'hide' && pile.isLast(c)) {
             pile.exchange([c], self.getPileById('show'))
+            return
           }
           const hide = self.getPileById('hide')
           if (pile && pile.id === 'show' && hide && hide.cards.length === 0) {
             pile.exchange(Array.from(pile.cards), hide, false)
+            return
+          }
+          if (c.faceUp && pile && pile.isLast(c)) {
+            self.typePiles.some(t => {
+              if (t.canCardDrop(c)) {
+                pile.exchange([c], t)
+              }
+            })
           }
         }
       })
