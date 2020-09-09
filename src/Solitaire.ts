@@ -228,6 +228,7 @@ export default class Solitaire {
 
   async init () {
     const self = this
+    self.progress(0)
     await self.find('hide').addDeck('deck-1', p => { self.progress(p) })
     self.progress()
     this.piles.forEach(p => p.show())
@@ -237,7 +238,6 @@ export default class Solitaire {
     for (let m = 1; m <= 6; m++) {
       for (let n = m; n <= 6; n++) {
         await self.dispatch('lane' + n, n === m)
-        console.log('lane' + n, true)
       }
     }
     self.dispatch('show', true)

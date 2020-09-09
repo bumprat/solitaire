@@ -29,6 +29,7 @@ export default class Card {
   firstY?: number
   audioPlaceCard: HTMLAudioElement
   static audioPlaceCardSrc: string = './cards/cardPlace.wav'
+  private static audioPlaceCardBlob : string = ''
   constructor (
     stage: Element | string,
     public id: string,
@@ -120,15 +121,12 @@ export default class Card {
     }
     await loadImage(self.img, Card.imgSrc.replace('{type}', self.type))
     await loadImage(self.imgBack, Card.imgBackSrc)
-    async function loadAudio (audio:HTMLAudioElement, src:string) {
-      return new Promise((resolve, reject) => {
-        audio.src = src
-        audio.readyState === 4 && resolve()
-        audio.onloadeddata = () => resolve()
-        audio.onerror = (e) => reject(new Error(e instanceof Event ? e.type : e))
-      })
+    if (Card.audioPlaceCardBlob === '') {
+      const response = await fetch(Card.audioPlaceCardSrc)
+      const blob = await response.blob()
+      Card.audioPlaceCardBlob = URL.createObjectURL(blob)
     }
-    await loadAudio(self.audioPlaceCard, Card.audioPlaceCardSrc)
+    self.audioPlaceCard = new Audio(Card.audioPlaceCardBlob)
     self.ratio = self.img.height / self.img.width
     self.dom.append(self.img)
     self.dom.append(self.imgBack)
