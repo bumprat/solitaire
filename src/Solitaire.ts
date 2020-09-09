@@ -393,7 +393,7 @@ export default class Solitaire {
       if (!this.bar) {
         this.progressbar.classList.add('progress')
         this.bar = new ProgressBar.Circle(this.progressbar, {
-          color: '#f00',
+          color: '#f0f',
           strokeWidth: 3,
           trailWidth: 1,
           easing: 'easeInOut',

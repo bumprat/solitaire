@@ -2,11 +2,11 @@
   "name": "solitaire",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/Solitaire.js",
   "scripts": {
     "dev": "set NODE_ENV=development&&pnpx rollup -c -w",
     "build": "set NODE_ENV=production&&pnpx rollup -c",
-    "publish": "git subtree push --prefix dist origin gh-pages"
+    "publish": "pnpm run build&&git subtree push --prefix dist origin gh-pages"
   },
   "author": "",
   "license": "ISC",
