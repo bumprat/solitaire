@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "set NODE_ENV=development&&pnpx rollup -c -w",
     "build": "set NODE_ENV=production&&pnpx rollup -c",
-    "git": "pnpm run build&&git push origin master&&git subtree push --prefix dist origin gh-pages"
+    "git": "git push origin master&&git subtree push --prefix dist origin gh-pages"
   },
   "author": "",
   "license": "ISC",

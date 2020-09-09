@@ -57,6 +57,7 @@ export default class Solitaire {
   private initial:boolean = true
   private progressbar: HTMLDivElement = document.createElement('div')
   private bar: any
+  private winAudio : HTMLAudioElement = new Audio('./cards/win.mp3')
   constructor (
     stage: HTMLElement | string,
     cardDomType: 'canvas' | 'svg' = 'canvas'
@@ -385,9 +386,11 @@ export default class Solitaire {
 
   checkWin () {
     if (this.piles.filter(p => this.typePiles.indexOf(p) < 0).every(p => p.cards.length === 0)) {
-      this.piles.forEach(p => p.cards.forEach(c => c.fall()))
+      // this.piles.forEach(p => p.cards.forEach(c => c.fall()))
       this.piles.forEach(p => p.cards.splice(0))
       this.piles.forEach(p => p.updatePosition())
+      this.winAudio.loop = true
+      this.winAudio.play()
     }
   }
 
