@@ -188,7 +188,11 @@ export default class Solitaire {
       canCardDropLane,
       { left: lefts[6], top: 0.2, zIndex: 2000 }
     )
-    this.piles.push(pileShow, pileHide, pileSpade, pileHeart, pileClub, pileDiamond, pileLane1, pileLane2, pileLane3, pileLane4, pileLane5, pileLane6)
+    this.piles.push(
+      pileShow, pileHide, pileSpade, pileHeart,
+      pileClub, pileDiamond, pileLane1, pileLane2, pileLane3,
+      pileLane4, pileLane5, pileLane6
+    )
     this.typePiles.push(pileSpade, pileHeart, pileClub, pileDiamond)
   }
 
@@ -350,6 +354,8 @@ export default class Solitaire {
   checkWin () {
     if (this.piles.filter(p => this.typePiles.indexOf(p) < 0).every(p => p.cards.length === 0)) {
       this.piles.forEach(p => p.cards.forEach(c => c.fall()))
+      this.piles.forEach(p => p.cards.splice(0))
+      this.piles.forEach(p => p.updatePosition())
     }
   }
 }

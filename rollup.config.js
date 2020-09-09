@@ -6,6 +6,8 @@ import commonjs from '@rollup/plugin-commonjs'
 import css from 'rollup-plugin-css-only'
 import typescript from '@rollup/plugin-typescript'
 import { exec } from 'child_process'
+import { terser } from 'rollup-plugin-terser'
+import copy from 'rollup-plugin-copy'
 
 const mode = process.env.NODE_ENV
 if (mode === 'development') {
@@ -52,6 +54,16 @@ export default {
         ],
         open: true
       }), livereload()]
-      : [])
+      : [serve({
+        contentBase: [
+          'dist'
+        ],
+        open: true
+      }), terser(),
+      copy({
+        targets: [
+          { src: 'static/*', dest: 'dist' }
+        ]
+      })])
   ]
 }
