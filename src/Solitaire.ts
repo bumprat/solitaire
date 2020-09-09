@@ -384,19 +384,19 @@ export default class Solitaire {
       if (!this.bar) {
         this.progressbar.classList.add('progress')
         this.bar = new ProgressBar.Circle(this.progressbar, {
-          color: '#fff',
-          strokeWidth: 2,
+          color: '#f00',
+          strokeWidth: 3,
           trailWidth: 1,
           easing: 'easeInOut',
           duration: 1400,
           text: {
             autoStyleContainer: false
           },
-          from: { color: '#fff', width: 1 },
-          to: { color: '#f00', width: 5 },
+          // from: { color: '#fff', width: 3 },
+          // to: { color: '#fff', width: 3 },
           step: function (state:any, circle:any) {
-            circle.path.setAttribute('stroke', state.color)
-            circle.path.setAttribute('stroke-width', state.width)
+            // circle.path.setAttribute('stroke', state.color)
+            // circle.path.setAttribute('stroke-width', state.width)
 
             var value = Math.round(circle.value() * 100)
             if (value === 0) {
