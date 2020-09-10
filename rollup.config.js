@@ -15,14 +15,14 @@ if (mode === 'development') {
 } else {
   exec('rmdir dist /s/q ')
 }
-export default {
-  input: path.join('src', 'Solitaire.ts'),
+export default [{
+  input:
+      path.join('src', 'Solitaire.ts'),
   output: {
-    // file: 'solitaire.js',
     dir: mode === 'development'
       ? 'dev'
       : 'dist',
-    format: 'iife',
+    format: 'umd',
     name: 'Solitaire',
     sourcemap: mode === 'development'
   },
@@ -34,7 +34,43 @@ export default {
       rootDir: './src',
       sourceMap: mode === 'development',
       target: 'ES3',
-      declaration: mode === 'development'
+      declaration: mode === 'development',
+      lib: ['ES5', 'ES6', 'ES2015.Promise', 'DOM']
+    }),
+    commonjs(),
+    nodeResolve({
+      customResolveOptions: {
+        // I store projects on a encrypted potable drive,
+        // which creates symlink as driver root path.
+        preserveSymlinks: true
+      }
+    }),
+    css(),
+    ...(mode === 'development'
+      ? []
+      : [terser()])
+  ]
+}, {
+  input:
+    path.join('src', 'index.ts'),
+  output: {
+    dir: mode === 'development'
+      ? 'dev'
+      : 'dist',
+    format: 'iife',
+    name: 'main',
+    sourcemap: mode === 'development'
+  },
+  plugins: [
+    typescript({
+      outDir: mode === 'development'
+        ? 'dev'
+        : 'dist',
+      rootDir: './src',
+      sourceMap: mode === 'development',
+      target: 'ES3',
+      declaration: mode === 'development',
+      lib: ['ES5', 'ES6', 'ES2015.Promise', 'DOM']
     }),
     commonjs(),
     nodeResolve({
@@ -61,4 +97,4 @@ export default {
           ]
         })])
   ]
-}
+}]

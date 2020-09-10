@@ -57,7 +57,7 @@ export default class Pile {
     this.shadow.style.opacity = '0'
     this.shadow.innerHTML = shadowContent
     this.updateShadow()
-    this.stage.append(this.shadow)
+    this.stage.appendChild(this.shadow)
     new ResizeObserver(async () => {
       await this.updatePosition()
       await this.updateShadow()

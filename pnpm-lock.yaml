@@ -2,6 +2,7 @@ dependencies:
   '@juggle/resize-observer': 3.2.0
   hammerjs: 2.0.8
   progressbar.js: 1.1.0
+  tslib: 2.0.1
 devDependencies:
   '@rollup/plugin-commonjs': 15.0.0_rollup@2.26.11
   '@rollup/plugin-node-resolve': 9.0.0_rollup@2.26.11
@@ -22,7 +23,6 @@ devDependencies:
   rollup-plugin-livereload: 2.0.0
   rollup-plugin-serve: 1.0.4
   rollup-plugin-terser: 7.0.2_rollup@2.26.11
-  tslib: 2.0.1
   typescript: 4.0.2
 lockfileVersion: 5.1
 packages:
@@ -2189,7 +2189,7 @@ packages:
       integrity: sha1-yIHhPMcBWJTtkUhi0nZDb6mkcEM=
       tarball: tslib/download/tslib-1.13.0.tgz
   /tslib/2.0.1:
-    dev: true
+    dev: false
     resolution:
       integrity: sha1-QQ6w0RPltjVkkO7HSWA3JbAhtD4=
       tarball: tslib/download/tslib-2.0.1.tgz

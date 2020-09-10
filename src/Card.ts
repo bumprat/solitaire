@@ -71,7 +71,7 @@ export default class Card {
       throw new Error(`card cannot be created with dom type: ${Card.cardDomType}`)
     }
     this.dom.classList.add('card')
-    this.stage.append(this.dom)
+    this.stage.appendChild(this.dom)
     this.faceUp = true
     this.audioPlaceCard = new Audio()
 
@@ -128,8 +128,8 @@ export default class Card {
     }
     self.audioPlaceCard = new Audio(Card.audioPlaceCardBlob)
     self.ratio = self.img.height / self.img.width
-    self.dom.append(self.img)
-    self.dom.append(self.imgBack)
+    self.dom.appendChild(self.img)
+    self.dom.appendChild(self.imgBack)
     self.dom.draggable = false
     self.img.draggable = false
     self.imgBack.draggable = false

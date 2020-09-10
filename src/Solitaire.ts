@@ -73,7 +73,7 @@ export default class Solitaire {
       this.stage = stage
     }
     Card.cardDomType = cardDomType
-    this.stage.append(this.progressbar)
+    this.stage.appendChild(this.progressbar)
     const lefts = Array(7).fill(0).map((n, i) => i * 0.14 + 0.02)
     const pileHide = new Pile(
       'hide',

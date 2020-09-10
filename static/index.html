@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="./solitaire.css" />
     <link rel="stylesheet" href="./main.css" />
     <link rel="icon" type="image/png" href="./favicon.ico" />
+    <script src="./polyfills.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1"></script>
     <title>Solitaire</title>
   </head>
   <body>
@@ -18,27 +20,6 @@
       <div id="stage"></div>
     </div>
     <script src="Solitaire.js"></script>
-    <script>
-      async function start(domtype) {
-        const stage = document.querySelector("#stage");
-        const btns = document.querySelectorAll(".load");
-        btns.forEach((btn) => {
-          btn.style.display = "none";
-        });
-        stage.style.display = "block";
-        if (
-          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-          )
-        ) {
-          await stage.requestFullscreen();
-          await screen.orientation.lock("landscape");
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-        const solitaire = new Solitaire(stage, domtype);
-        await solitaire.init();
-        window.solitaire = solitaire;
-      }
-    </script>
+    <script src="index.js"></script>
   </body>
 </html>
