@@ -24,6 +24,7 @@ devDependencies:
   rollup-plugin-serve: 1.0.4
   rollup-plugin-terser: 7.0.2_rollup@2.26.11
   typescript: 4.0.2
+  vconsole: 3.3.4
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.10.4:
@@ -2263,6 +2264,11 @@ packages:
     resolution:
       integrity: sha1-/JH2uce6FchX9MssXe/uw51PQQo=
       tarball: validate-npm-package-license/download/validate-npm-package-license-3.0.4.tgz
+  /vconsole/3.3.4:
+    dev: true
+    resolution:
+      integrity: sha1-p9rNiIez0+kC6NGEJc2lbDTnf1E=
+      tarball: vconsole/download/vconsole-3.3.4.tgz
   /which/2.0.2:
     dependencies:
       isexe: 2.0.0
@@ -2326,3 +2332,4 @@ specifiers:
   rollup-plugin-terser: ^7.0.2
   tslib: ^2.0.1
   typescript: ^4.0.2
+  vconsole: ^3.3.4

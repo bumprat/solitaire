@@ -33,9 +33,9 @@ export default [{
         : 'dist',
       rootDir: './src',
       sourceMap: mode === 'development',
-      target: 'ES3',
-      declaration: mode === 'development',
-      lib: ['ES5', 'ES6', 'ES2015.Promise', 'DOM']
+      target: 'ES5',
+      declaration: mode === 'development'
+      // lib: ['ES5', 'DOM']
     }),
     commonjs(),
     nodeResolve({
@@ -52,7 +52,7 @@ export default [{
   ]
 }, {
   input:
-    path.join('src', 'index.ts'),
+    path.join('src', mode === 'development' ? 'index.dev.ts' : 'index.ts'),
   output: {
     dir: mode === 'development'
       ? 'dev'
@@ -68,9 +68,9 @@ export default [{
         : 'dist',
       rootDir: './src',
       sourceMap: mode === 'development',
-      target: 'ES3',
-      declaration: mode === 'development',
-      lib: ['ES5', 'ES6', 'ES2015.Promise', 'DOM']
+      target: 'ES5',
+      declaration: mode === 'development'
+      // lib: ['ES5', 'DOM', 'ScriptHost']
     }),
     commonjs(),
     nodeResolve({
