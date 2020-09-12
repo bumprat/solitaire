@@ -68,7 +68,7 @@ export default [{
         : 'dist',
       rootDir: './src',
       sourceMap: mode === 'development',
-      target: 'ES5',
+      target: 'ES3',
       declaration: mode === 'development'
       // lib: ['ES5', 'DOM', 'ScriptHost']
     }),
