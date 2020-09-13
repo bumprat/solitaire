@@ -275,12 +275,13 @@ export default class Solitaire {
         handler: () => {
           const pile = self.getPileByCard(c)
           if (c.faceUp && pile && pile.isLast(c)) {
-            self.typePiles.some(t => {
+            if (self.typePiles.some(t => {
               if (t.canCardDrop([c])) {
                 pile.exchange([c], t)
                 self.checkWin()
+                return true
               }
-            })
+            })) return
           }
           if (pile && pile.id === 'hide' && pile.isLast(c)) {
             pile.exchange([c], self.getPileById('show'))
