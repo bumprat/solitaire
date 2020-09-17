@@ -1,7 +1,8 @@
 /// <reference path="../node_modules/vconsole/dist/vconsole.min.d.ts" />
+import './main.css'
+
 import VConsole from 'vconsole'
 declare const Solitaire: any
-
 async function start (domtype: 'canvas' | 'svg') {
   const stage = document.querySelector('#stage')
   const btns = document.querySelectorAll('.load')
@@ -16,14 +17,12 @@ async function start (domtype: 'canvas' | 'svg') {
       navigator.userAgent
     )
   ) {
-    if (stage.requestFullscreen) {
-      try {
-        await stage.requestFullscreen()
-        await screen.orientation.lock('landscape')
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      } catch (e) {
-        console.log(new Error(e))
-      }
+    try {
+      await stage.requestFullscreen()
+      await screen.orientation.lock('landscape')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    } catch (e) {
+      console.log(new Error(e))
     }
   }
   const solitaire = new Solitaire(stage, domtype)

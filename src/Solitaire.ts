@@ -2,18 +2,29 @@ import Card from './Card'
 import Pile, { pileLayout, stackLayout } from './Pile'
 import { Point } from './SharedTypes'
 import ProgressBar from 'progressbar.js'
+import './solitaire.css'
 
-function canCardDropType (this: Pile, cards: Card[]):boolean {
-  const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+function canCardDropType (this: Pile, cards: Card[]): boolean {
+  const numbers = [
+    'A',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'J',
+    'Q',
+    'K'
+  ]
   if (cards.length !== 1) return false
   const card = cards[0]
   const cardType = card && card.type.slice(-1)
   const cardNumber = card && card.type.slice(0, -1)
-  if (
-    card.faceUp &&
-    cardType.toUpperCase() ===
-      this.id[0].toUpperCase()
-  ) {
+  if (card.faceUp && cardType.toUpperCase() === this.id[0].toUpperCase()) {
     if (this.cards.length === 0) {
       return cardNumber === 'A'
     } else {
@@ -27,8 +38,22 @@ function canCardDropType (this: Pile, cards: Card[]):boolean {
 }
 
 function canCardDropLane (this: Pile, cards: Card[]) {
-  const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-  const types = { S: 1, H: 2, C: 1, D: 2 } as {[x:string]:number}
+  const numbers = [
+    'A',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'J',
+    'Q',
+    'K'
+  ]
+  const types = { S: 1, H: 2, C: 1, D: 2 } as { [x: string]: number }
   if (cards.length === 0) return false
   const card = cards[0]
   if (card && card.faceUp) {
@@ -51,13 +76,13 @@ function canCardDropLane (this: Pile, cards: Card[]) {
 }
 
 export default class Solitaire {
-  stage: HTMLElement
-  piles: Pile[] = []
-  typePiles: Pile[] = []
-  private initial:boolean = true
-  private progressbar: HTMLDivElement = document.createElement('div')
-  private bar: any
-  private winAudio : HTMLAudioElement = new Audio('./cards/win.mp3')
+  stage: HTMLElement;
+  piles: Pile[] = [];
+  typePiles: Pile[] = [];
+  private initial: boolean = true;
+  private progressbar: HTMLDivElement = document.createElement('div');
+  private bar: any;
+  private winAudio: HTMLAudioElement = new Audio('./cards/win.mp3');
   constructor (
     stage: HTMLElement | string,
     cardDomType: 'canvas' | 'svg' = 'canvas'
@@ -74,7 +99,9 @@ export default class Solitaire {
     }
     Card.cardDomType = cardDomType
     this.stage.appendChild(this.progressbar)
-    const lefts = Array(7).fill(0).map((n, i) => i * 0.14 + 0.02)
+    const lefts = Array(7)
+      .fill(0)
+      .map((n, i) => i * 0.14 + 0.02)
     const pileHide = new Pile(
       'hide',
       self.stage,
@@ -211,15 +238,24 @@ export default class Solitaire {
       '<div class="type">6</div>'
     )
     this.piles.push(
-      pileShow, pileHide, pileSpade, pileHeart,
-      pileClub, pileDiamond, pileLane1, pileLane2, pileLane3,
-      pileLane4, pileLane5, pileLane6
+      pileShow,
+      pileHide,
+      pileSpade,
+      pileHeart,
+      pileClub,
+      pileDiamond,
+      pileLane1,
+      pileLane2,
+      pileLane3,
+      pileLane4,
+      pileLane5,
+      pileLane6
     )
     this.typePiles.push(pileSpade, pileHeart, pileClub, pileDiamond)
   }
 
-  find (id:string) {
-    const result = this.piles.find(p => p.id === id)
+  find (id: string) {
+    const result = this.piles.find((p) => p.id === id)
     if (!result) {
       throw new Error()
     }
@@ -229,9 +265,11 @@ export default class Solitaire {
   async init () {
     const self = this
     self.progress(0)
-    await self.find('hide').addDeck('deck-1', p => { self.progress(p) })
+    await self.find('hide').addDeck('deck-1', (p) => {
+      self.progress(p)
+    })
     self.progress()
-    this.piles.forEach(p => p.show())
+    this.piles.forEach((p) => p.show())
     self.find('hide').shuffle()
     await self.find('hide').updatePosition(false)
     self.find('hide').show()
@@ -245,7 +283,7 @@ export default class Solitaire {
     self.initInteraction()
   }
 
-  async dispatch (pileId:string, faceUp:boolean) {
+  async dispatch (pileId: string, faceUp: boolean) {
     const self = this
     const card = self.find('hide').cards.slice(-1)
     card[0].faceUp = faceUp
@@ -253,35 +291,41 @@ export default class Solitaire {
   }
 
   getTargetPile (point: Point, card: Card) {
-    const result = this.piles.filter(p => p.cards.indexOf(card) < 0).filter(p => p.isPointInPile(point))
+    const result = this.piles
+      .filter((p) => p.cards.indexOf(card) < 0)
+      .filter((p) => p.isPointInPile(point))
     return result
   }
 
   getPileById (id: string) {
-    return this.piles.find(p => p.id === id)
+    return this.piles.find((p) => p.id === id)
   }
 
   getPileByCard (card: Card) {
-    return this.piles.find(p => p.cards.some(c => c === card))
+    return this.piles.find((p) => p.cards.some((c) => c === card))
   }
 
   initInteraction () {
     const self = this
-    const allCards:Card[] = []
-    self.piles.forEach(p => allCards.push(...p.cards))
-    allCards.forEach(c => {
+    const allCards: Card[] = []
+    self.piles.forEach((p) => allCards.push(...p.cards))
+    allCards.forEach((c) => {
       c.ontap.push({
         namespace: 'pile',
         handler: () => {
           const pile = self.getPileByCard(c)
           if (c.faceUp && pile && pile.isLast(c)) {
-            if (self.typePiles.some(t => {
-              if (t.canCardDrop([c])) {
-                pile.exchange([c], t)
-                self.checkWin()
-                return true
-              }
-            })) return
+            if (
+              self.typePiles.some((t) => {
+                if (t.canCardDrop([c])) {
+                  pile.exchange([c], t)
+                  self.checkWin()
+                  return true
+                }
+              })
+            ) {
+              return
+            }
           }
           if (pile && pile.id === 'hide' && pile.isLast(c)) {
             pile.exchange([c], self.getPileById('show'))
@@ -298,7 +342,7 @@ export default class Solitaire {
         handler: () => {
           const pile = self.getPileByCard(c)
           if (c.faceUp && pile && pile.isLast(c)) {
-            self.typePiles.some(t => {
+            self.typePiles.some((t) => {
               if (t.canCardDrop([c])) {
                 pile.exchange([c], t)
               }
@@ -308,8 +352,8 @@ export default class Solitaire {
       })
       const pointerPile = {
         items: [] as {
-          card: Card,
-          startPosition: {left:number, top:number, zIndex:number}
+          card: Card;
+          startPosition: { left: number; top: number; zIndex: number };
         }[],
         sourcePile: null as Pile | null
       }
@@ -325,7 +369,7 @@ export default class Solitaire {
             const faceUpPiles = [self.getPileById('show'), ...self.typePiles]
             if (!(faceUpPiles.indexOf(pile) >= 0 && !pile.isLast(c))) {
               const index = pile.cards.indexOf(c)
-              pointerPile.items = pile.cards.slice(index).map(c => ({
+              pointerPile.items = pile.cards.slice(index).map((c) => ({
                 card: c,
                 startPosition: Object.assign({}, c.position)
               }))
@@ -339,21 +383,32 @@ export default class Solitaire {
         handler: (e) => {
           if (pointerPile.items.length > 0) {
             const clientRect = self.stage.getBoundingClientRect()
-            pointerPile.items.forEach(item => {
-              item.card.position.left = item.startPosition.left + (e.deltaX / clientRect.width)
-              item.card.position.top = item.startPosition.top + (e.deltaY / clientRect.width)
-              item.card.updatePosition(false, 999999999 + item.startPosition.zIndex)
+            pointerPile.items.forEach((item) => {
+              item.card.position.left =
+                item.startPosition.left + e.deltaX / clientRect.width
+              item.card.position.top =
+                item.startPosition.top + e.deltaY / clientRect.width
+              item.card.updatePosition(
+                false,
+                999999999 + item.startPosition.zIndex
+              )
             })
             const targetPile = self.getTargetPile(e.center, c)[0]
             if (targetPile) {
-              if (targetPile.canCardDrop(pointerPile.items.map(item => item.card))) {
+              if (
+                targetPile.canCardDrop(
+                  pointerPile.items.map((item) => item.card)
+                )
+              ) {
                 targetPile.glow('success')
               } else {
                 targetPile.glow('fail')
               }
-              self.piles.filter(p => p !== targetPile).forEach(p => p.glow())
+              self.piles
+                .filter((p) => p !== targetPile)
+                .forEach((p) => p.glow())
             } else {
-              self.piles.forEach(p => p.glow())
+              self.piles.forEach((p) => p.glow())
             }
           }
         }
@@ -363,7 +418,10 @@ export default class Solitaire {
         handler: async (e) => {
           const targetPile = self.getTargetPile(e.center, c)[0]
           if (pointerPile.sourcePile === null) return
-          if (pointerPile.sourcePile.id === 'hide' && pointerPile.sourcePile.isPointInPile(e.center)) {
+          if (
+            pointerPile.sourcePile.id === 'hide' &&
+            pointerPile.sourcePile.isPointInPile(e.center)
+          ) {
             pointerPile.sourcePile.exchange(
               pointerPile.sourcePile.cards.slice(-1),
               self.getPileById('show')
@@ -371,31 +429,40 @@ export default class Solitaire {
             return
           }
           if (targetPile && pointerPile.items.length > 0) {
-            if (targetPile.canCardDrop(pointerPile.items.map(item => item.card))) {
-              await pointerPile.sourcePile.exchange(pointerPile.items.reverse().map(i => i.card), targetPile)
+            if (
+              targetPile.canCardDrop(pointerPile.items.map((item) => item.card))
+            ) {
+              await pointerPile.sourcePile.exchange(
+                pointerPile.items.reverse().map((i) => i.card),
+                targetPile
+              )
               self.checkWin()
             }
           }
           if (pointerPile.sourcePile) {
             pointerPile.sourcePile.updatePosition()
           }
-          self.piles.forEach(p => p.glow())
+          self.piles.forEach((p) => p.glow())
         }
       })
     })
   }
 
   checkWin () {
-    if (this.piles.filter(p => this.typePiles.indexOf(p) < 0).every(p => p.cards.length === 0)) {
+    if (
+      this.piles
+        .filter((p) => this.typePiles.indexOf(p) < 0)
+        .every((p) => p.cards.length === 0)
+    ) {
       // this.piles.forEach(p => p.cards.forEach(c => c.fall()))
-      this.piles.forEach(p => p.cards.splice(0))
-      this.piles.forEach(p => p.updatePosition())
+      this.piles.forEach((p) => p.cards.splice(0))
+      this.piles.forEach((p) => p.updatePosition())
       this.winAudio.loop = true
       this.winAudio.play()
     }
   }
 
-  progress (progress?:number) {
+  progress (progress?: number) {
     if (progress !== undefined) {
       if (!this.bar) {
         this.progressbar.classList.add('progress')
@@ -410,7 +477,7 @@ export default class Solitaire {
           },
           // from: { color: '#fff', width: 3 },
           // to: { color: '#fff', width: 3 },
-          step: function (state:any, circle:any) {
+          step: function (state: any, circle: any) {
             // circle.path.setAttribute('stroke', state.color)
             // circle.path.setAttribute('stroke-width', state.width)
 

@@ -1,3 +1,5 @@
+import './main.css'
+
 declare const Solitaire: any
 async function start (domtype: 'canvas' | 'svg') {
   const stage = document.querySelector('#stage')
