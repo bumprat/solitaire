@@ -69,7 +69,7 @@ const commonConfig = {
 const solitaireConfig = {
   ...commonConfig,
   entry: {
-    Solitaire: path.resolve(__dirname, 'src', 'Solitaire.ts')
+    solitaire: path.resolve(__dirname, 'src', 'Solitaire.ts')
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
