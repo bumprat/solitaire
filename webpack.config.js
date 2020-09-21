@@ -1,10 +1,10 @@
 const path = require('path')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const { exec } = require('child_process')
 const dev = process.env.NODE_ENV === 'development'
 console.log(`webpack running in ${dev ? 'development' : 'production'} mode`)
-
+exec('rd dist /s /q')
 const commonConfig = {
   mode: dev ? 'development' : 'production',
   module: {
@@ -31,7 +31,8 @@ const commonConfig = {
                   {
                     corejs: 3
                   }
-                ]
+                ],
+                'babel-plugin-transform-class-properties'
               ]
             }
           }
@@ -76,7 +77,7 @@ const solitaireConfig = {
     library: 'Solitaire',
     libraryExport: 'default'
   },
-  plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin({})]
+  plugins: [new MiniCssExtractPlugin({})]
 }
 
 const demoConfig = {
@@ -85,27 +86,25 @@ const demoConfig = {
     index: path.resolve(__dirname, 'src', dev ? 'index.dev.ts' : 'index.ts')
   },
   output: {
-    path: path.resolve(__dirname, 'dist', 'example'),
+    path: path.resolve(__dirname, 'dist'),
     libraryTarget: 'var'
   },
   plugins: [
-    new CleanWebpackPlugin(),
     new CopyPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'src', 'static'),
-          to: path.resolve(__dirname, 'dist', 'example')
+          to: path.resolve(__dirname, 'dist')
         }
       ]
     }),
     new MiniCssExtractPlugin({})
   ],
   devServer: {
-    contentBase: path.join(__dirname, 'dist', 'example'),
+    contentBase: path.join(__dirname, 'dist'),
     compress: true,
     port: 9000,
-    open: true,
-    openPage: '/example/index.html'
+    open: true
   }
 }
 module.exports = [demoConfig, solitaireConfig]
