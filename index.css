@@ -1,0 +1,43 @@
+html,
+body {
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+}
+
+.container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  background-color: #3698e2;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.load:first-child {
+  margin-top: 40vh;
+}
+
+.load {
+  background-color: rgb(231, 228, 31);
+  border-radius: 0.4vw;
+  border: solid 0.5vw #fff;
+  margin: 1vw;
+  color: rgb(0, 17, 94);
+  font-size: 2vw;
+  font-weight: bolder;
+  padding: 1vw;
+}
+
