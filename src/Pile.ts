@@ -24,23 +24,28 @@ export function stackLayout (c: Card, i: number, l: number) {
 }
 
 export default class Pile {
-  stage: Element
-  cards: Card[] = []
-  shadow: HTMLDivElement
-  interactExpand:number = 0.02
-  shadowImg?: HTMLImageElement
+  stage: Element;
+  cards: Card[] = [];
+  shadow: HTMLDivElement;
+  interactExpand: number = 0.02;
+  shadowImg?: HTMLImageElement;
   constructor (
     public id: string,
     stage: string | Element,
-    private calculate: (card: Card, index: number, length: number) => void
-    = (c, i, l) => {
+    private calculate: (card: Card, index: number, length: number) => void = (
+      c,
+      i,
+      l
+    ) => {
       c.position.left = i / 54 / 100
       c.position.top = i / 54 / 100
       c.position.zIndex = i
     },
     public canCardDrop: (cards: Card[], sourcePile?: Pile) => boolean,
     public position: Card['position'] = {
-      left: 0, top: 0, zIndex: 0
+      left: 0,
+      top: 0,
+      zIndex: 0
     },
     shadowContent: string = ''
   ) {
@@ -68,7 +73,9 @@ export default class Pile {
     id: string,
     type: string,
     position: Card['position'] = {
-      left: 0, top: 0, zIndex: 0
+      left: 0,
+      top: 0,
+      zIndex: 0
     },
     atIndex: number = this.cards.length
   ) {
@@ -81,18 +88,29 @@ export default class Pile {
     return card
   }
 
-  async addDeck (idPrefix: string = '', progress: (progress:number)=>void) {
+  async addDeck (idPrefix: string = '', progress: (progress: number) => void) {
     const self = this
     const types = ['S', 'H', 'C', 'D']
-    const numbers = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+    const numbers = [
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K'
+    ]
     const result = []
     const totalCards = types.length * numbers.length
     for (const t of types) {
       for (const n of numbers) {
-        const card = await self.add(
-          idPrefix + '-' + n + t,
-          n + t
-        )
+        const card = await self.add(idPrefix + '-' + n + t, n + t)
         result.push(card)
         progress(result.length / totalCards)
       }
@@ -117,9 +135,9 @@ export default class Pile {
   ) {
     const self = this
     if (anotherPile === undefined) return
-    cards.forEach(card => {
+    cards.forEach((card) => {
       if (self.cards.indexOf(card) > -1) {
-        atIndex = atIndex ?? anotherPile.cards.length
+        atIndex = atIndex || anotherPile.cards.length
         self.cards.splice(self.cards.indexOf(card), 1)
         anotherPile.cards.splice(atIndex, 0, card)
       }
@@ -141,13 +159,13 @@ export default class Pile {
       c.position.top += self.position.top
       c.position.zIndex += self.position.zIndex
     })
-    await Promise.all(self.cards.map(c => c.updatePosition(animate)))
+    await Promise.all(self.cards.map((c) => c.updatePosition(animate)))
     self.updateShadow()
   }
 
   async updateShadow () {
     const clientRect = this.stage.getBoundingClientRect()
-    async function loadImage (src:string): Promise<HTMLImageElement> {
+    async function loadImage (src: string): Promise<HTMLImageElement> {
       return new Promise((resolve, reject) => {
         const img = new Image()
         img.src = src
@@ -156,16 +174,22 @@ export default class Pile {
         img.onerror = (e) => reject(new Error(e instanceof Event ? e.type : e))
       })
     }
-    this.shadowImg = this.shadowImg ?? await loadImage(Card.imgBackSrc)
+    this.shadowImg = this.shadowImg || (await loadImage(Card.imgBackSrc))
     this.shadow.style.position = 'absolute'
     const cardWidthBase = 0.1 * clientRect.width
-    const cardHeightBase = cardWidthBase * this.shadowImg.height / this.shadowImg.width
+    const cardHeightBase =
+      (cardWidthBase * this.shadowImg.height) / this.shadowImg.width
     const padding = 0.01 * clientRect.width
-    const pileTop = Math.min(...this.cards.map(c => c.dom.getBoundingClientRect().top))
-    const pileBottom = Math.max(...this.cards.map(c => c.dom.getBoundingClientRect().bottom))
+    const pileTop = Math.min(
+      ...this.cards.map((c) => c.dom.getBoundingClientRect().top)
+    )
+    const pileBottom = Math.max(
+      ...this.cards.map((c) => c.dom.getBoundingClientRect().bottom)
+    )
     const pileHeight = pileBottom - pileTop
     this.shadow.style.width = cardWidthBase + 2 * padding + 'px'
-    this.shadow.style.height = Math.max(pileHeight, cardHeightBase) + 2 * padding + 'px'
+    this.shadow.style.height =
+      Math.max(pileHeight, cardHeightBase) + 2 * padding + 'px'
     this.shadow.classList.add('shadow')
     const shadowLeft = this.position.left * clientRect.width - padding
     const shadowTop = this.position.top * clientRect.width - padding
@@ -179,18 +203,21 @@ export default class Pile {
       }
       this.shadow.classList.add(classname)
     } else {
-      this.shadow.style.transform = this.shadow.style.transform.replace(' scale(1.05)', '')
+      this.shadow.style.transform = this.shadow.style.transform.replace(
+        ' scale(1.05)',
+        ''
+      )
       this.shadow.classList.remove('success', 'fail')
     }
   }
 
   show () {
-    this.cards.forEach(c => c.show())
+    this.cards.forEach((c) => c.show())
     this.shadow.style.opacity = '1'
   }
 
   hide () {
-    this.cards.forEach(c => c.hide())
+    this.cards.forEach((c) => c.hide())
     this.shadow.style.opacity = '0'
   }
 
@@ -199,14 +226,16 @@ export default class Pile {
     const stageWidth = self.stage.getBoundingClientRect().width
     const expand = stageWidth * self.interactExpand
     const range = [this.shadow]
-    return range.some(d => {
+    return range.some((d) => {
       const rect = d.getBoundingClientRect()
       if (
         point.x > rect.x - expand &&
         point.x < rect.x + rect.width + expand &&
         point.y > rect.y - expand &&
         point.y < rect.y + rect.height + expand
-      ) return true
+      ) {
+        return true
+      }
     })
   }
 

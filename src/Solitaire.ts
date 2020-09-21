@@ -359,7 +359,7 @@ export default class Solitaire {
       }
       c.onpanstart.push({
         namespace: 'pile',
-        handler: (e) => {
+        handler: (e: globalThis.HammerInput) => {
           const pile = self.getPileByCard(c)
           const hide = this.getPileById('hide')
           if (hide && hide.isPointInPile(e.center)) {
@@ -380,7 +380,7 @@ export default class Solitaire {
       })
       c.onpanmove.push({
         namespace: 'pile',
-        handler: (e) => {
+        handler: (e: globalThis.HammerInput) => {
           if (pointerPile.items.length > 0) {
             const clientRect = self.stage.getBoundingClientRect()
             pointerPile.items.forEach((item) => {
@@ -415,7 +415,7 @@ export default class Solitaire {
       })
       c.onpanend.push({
         namespace: 'pile',
-        handler: async (e) => {
+        handler: async (e: globalThis.HammerInput) => {
           const targetPile = self.getTargetPile(e.center, c)[0]
           if (pointerPile.sourcePile === null) return
           if (
