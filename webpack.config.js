@@ -1,6 +1,7 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const StatsPlugin = require('stats-webpack-plugin')
 const { exec } = require('child_process')
 const dev = process.env.NODE_ENV === 'development'
 console.log(`webpack running in ${dev ? 'development' : 'production'} mode`)
@@ -98,7 +99,10 @@ const demoConfig = {
         }
       ]
     }),
-    new MiniCssExtractPlugin({})
+    new MiniCssExtractPlugin({}),
+    new StatsPlugin('stats.json', {
+      chunkModules: true
+    })
   ],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),

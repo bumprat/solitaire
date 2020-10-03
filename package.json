@@ -7,7 +7,8 @@
     "dev": "set NODE_ENV=development&&pnpx webpack-dev-server -c",
     "build": "set NODE_ENV=production&&pnpx webpack -c",
     "git": "git push origin master&&git subtree push --prefix dist origin gh-pages",
-    "type-check": "pnpx tsc --noEmit"
+    "type-check": "pnpx tsc --noEmit",
+    "analyse": "pnpx webpack-bundle-analyzer dist/stats.json"
   },
   "author": "",
   "license": "ISC",
@@ -66,6 +67,8 @@
     "tslib": "^2.0.1",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
-    "whatwg-fetch": "^3.4.1"
+    "whatwg-fetch": "^3.4.1",
+    "webpack-bundle-analyzer": "^3.9.0",
+    "stats-webpack-plugin": "^0.7.0"
   }
 }

@@ -270,14 +270,14 @@ export default class Solitaire {
     })
     self.progress()
     this.piles.forEach((p) => p.show())
-    self.find('hide').shuffle()
+    // self.find("hide").shuffle();
     await self.find('hide').updatePosition(false)
     self.find('hide').show()
-    for (let m = 1; m <= 6; m++) {
-      for (let n = m; n <= 6; n++) {
-        await self.dispatch('lane' + n, n === m)
-      }
-    }
+    // for (let m = 1; m <= 6; m++) {
+    //   for (let n = m; n <= 6; n++) {
+    //     await self.dispatch("lane" + n, n === m);
+    //   }
+    // }
     self.dispatch('show', true)
     self.initial = false
     self.initInteraction()
@@ -433,7 +433,7 @@ export default class Solitaire {
               targetPile.canCardDrop(pointerPile.items.map((item) => item.card))
             ) {
               await pointerPile.sourcePile.exchange(
-                pointerPile.items.reverse().map((i) => i.card),
+                pointerPile.items.map((i) => i.card),
                 targetPile
               )
               self.checkWin()

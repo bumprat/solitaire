@@ -137,9 +137,9 @@ export default class Pile {
     if (anotherPile === undefined) return
     cards.forEach((card) => {
       if (self.cards.indexOf(card) > -1) {
-        atIndex = atIndex || anotherPile.cards.length
+        const index = atIndex || anotherPile.cards.length
         self.cards.splice(self.cards.indexOf(card), 1)
-        anotherPile.cards.splice(atIndex, 0, card)
+        anotherPile.cards.splice(index, 0, card)
       }
     })
     if (cards.length > 0 && sound) {
